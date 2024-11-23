@@ -15,6 +15,7 @@ class Game:
     def display_menu(self):
         self.screen.blit(self.background_color_image, (0,0))
         self.screen.blit(self.bee_background_image, (0,0))
+        StartButton = Button(0, 0, )
         pygame.display.update()
         
 
@@ -29,8 +30,11 @@ class Button:
         self.height = height
         self.action = action
 
-    def draw_button(self):
-        
+    def draw_button(self, screen):
+        pygame.draw.rect(screen, self.inactive_color, ((self.position), self.width, self.height))
+
+    def is_hovered(self):
+        pass
 
 NewGame = Game()
 
