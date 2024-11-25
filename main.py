@@ -62,12 +62,22 @@ class Button:
         self.action = action
 
     def draw_button(self, screen):
-        pygame.draw.rect(screen, self.inactive_color, (self.position[0], self.position[1], self.width, self.height))
-
-
-    def is_hovered(self):
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
+
+
+        # Display text on button
+        button_text= pygame.font.Font("freesansbold.ttf", 20)
+        
+
+        # check if user is hovering over button
+        if self.position[0] < mouse[0] < self.position[0] + self.width and self.position[1] < mouse[1] < self.position[1] + self.height:
+            pygame.draw.rect(screen, self.active_color, (self.position[0], self.position[1], self.width, self.height))
+        else:
+            pygame.draw.rect(screen, self.inactive_color, (self.position[0], self.position[1], self.width, self.height))
+
+
+
 
 NewGame = Game()
 
@@ -77,4 +87,3 @@ NewGame.run()
 
     
 pygame.quit()
-
