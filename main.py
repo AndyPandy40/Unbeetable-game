@@ -7,6 +7,7 @@ GREEN = (0, 255, 0)
 LIGHT_GREEN = (0, 200, 0)
 RED = (255, 0, 0)
 LIGHT_RED = (200, 0, 0)
+BLACK = (255, 255, 255)
 
 class Game:
     def __init__(self):
@@ -67,8 +68,13 @@ class Button:
 
 
         # Display text on button
-        button_text= pygame.font.Font("freesansbold.ttf", 20)
+        font = pygame.font.Font("freesansbold.ttf", 20)
+        text = font.render(self.text, True, BLACK)
+
+        button_centre = self.position[0] + (self.width/2)
+        text_rect = text.get_rect(centre=(button_centre))
         
+        screen.blit(text, text_rect)
 
         # check if user is hovering over button
         if self.position[0] < mouse[0] < self.position[0] + self.width and self.position[1] < mouse[1] < self.position[1] + self.height:
