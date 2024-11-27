@@ -133,10 +133,10 @@ class Map:
         self.tile_size = 96
 
         self.grass_img = pygame.image.load("images/tiles/grass.png")
-        self.grass_img = pygame.transform.scale(grass_img, (tile_size, tile_size))
+        self.grass_img = pygame.transform.scale(self.grass_img, (self.tile_size, self.tile_size))
  
         self.path_img = pygame.image.load("images/tiles/path.png")
-        self.path_img = pygame.transform.scale(path_img, (tile_size, tile_size))
+        self.path_img = pygame.transform.scale(self.path_img, (self.tile_size, self.tile_size))
 
         self.tilemap = [ 
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
