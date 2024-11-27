@@ -36,13 +36,16 @@ class Game:
         self.run_start_screen = True
         self.run_game = False
         self.clock = pygame.time.Clock()
+        
+        #Displays background images
+        self.screen.blit(self.background_color_image, (0,0))
+        self.screen.blit(self.bee_background_image, (0,0))
 
-
+        # Displays buttons at start of code
         self.start_button = Button(GREEN, LIGHT_GREEN, "Start", (216, 550), 450, 100, self.display_game)
         self.quit_button = Button(RED, LIGHT_RED, "Quit", (774, 550), 450, 100, self.quit)
 
-        self.screen.blit(self.background_color_image, (0,0))
-        self.screen.blit(self.bee_background_image, (0,0))
+
 
     def run(self):
         while self.run_start_screen:
@@ -81,6 +84,9 @@ class Game:
         self.run_start_screen = False
         self.run_game = True
 
+        NewMap = Map()
+        NewMap.draw_tilemap()
+
         pygame.display.update()
 
 
@@ -106,8 +112,7 @@ class Button:
         click = pygame.mouse.get_pressed()
 
 
-
-        # check if user is hovering over button
+        # Check if user is hovering over button
         if self.position[0] < mouse[0] < self.position[0] + self.width and self.position[1] < mouse[1] < self.position[1] + self.height:
             button_color = self.active_color
             if click[0]:
@@ -121,6 +126,43 @@ class Button:
         
         # Display text on button
         display_text(self.text, self.button_center, 60, BLACK, screen)
+
+
+class Map:
+    def __init__(self):
+        self.tile_size = 96
+
+        self.grass_img = pygame.image.load("images/tiles/grass.png")
+        self.grass_img = pygame.transform.scale(grass_img, (tile_size, tile_size))
+ 
+        self.path_img = pygame.image.load("images/tiles/path.png")
+        self.path_img = pygame.transform.scale(path_img, (tile_size, tile_size))
+
+        self.tilemap = [ 
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0], 
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0], 
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0], 
+            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1], 
+            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1], 
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0], 
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0], 
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0]
+        ]
+
+        self.tile_images = {
+            0: grass_img,
+            1: path_img,
+        }
+
+
+    def draw_tilemap(self):
+            # Iterates through each element in the 2d array
+            for row in range(len(self.tilemap)):
+                for col in range(len(self.tilemap[row])):
+                    tile_type = self.tilemap[row][col] # Finds the tile type at a position (1 or 0)
+                    tile_image = self.tile_images[tile_type] # Matches it with the image using the dictionary
+                    screen.blit(tile_image, (col * self.tile_size, row * self.tile_size)) # Displays them in order using their position in the array and size
 
 
 
