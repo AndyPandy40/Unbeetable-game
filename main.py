@@ -11,6 +11,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 
+# Function to make displaying text easier
 def display_text(text, position, size, color, screen):
     font = pygame.font.Font("freesansbold.ttf", size)
     text = font.render(text, True, color)
@@ -29,6 +30,7 @@ class Game:
         self.money = 0
         self.score = 0
 
+        # Loads the background images
         self.background_color_image = pygame.image.load("images/grass_background.png")
         self.bee_background_image = pygame.image.load("images/title_screen_bee.png")
         self.title_text = pygame.image.load("images/Unbeetable_game_text.png")
@@ -41,7 +43,7 @@ class Game:
 
         self.frame = 0
         
-        #Displays background images
+        # Displays background images and text
         self.screen.blit(self.background_color_image, (0,0))
         self.screen.blit(self.bee_background_image, (0,0))
         self.screen.blit(self.title_text, (80,20))
@@ -62,7 +64,7 @@ class Game:
             # Display the menu
             self.display_menu()
             self.clock.tick(120)
-            print(self.clock.get_fps())
+            #print(self.clock.get_fps())
 
         while self.run_game:
             for event in pygame.event.get():
@@ -72,7 +74,7 @@ class Game:
             # Display the game
             self.display_game()
             self.clock.tick(120)
-            print(self.clock.get_fps())
+            #print(self.clock.get_fps())
 
 
     def display_menu(self):
@@ -83,8 +85,6 @@ class Game:
         # Create and display quit button
         self.quit_button.draw_button(self.screen)
 
-        #display_text("Unbeetable Game",(720, 100), 130, BLACK, self.screen)
-        #display_text("Unbeetable Game",(717, 100), 130, LIGHT_GREEN, self.screen)
         pygame.display.update()
         
 
@@ -99,6 +99,9 @@ class Game:
 
             NewMap = Map()
             NewMap.draw_tilemap(self.screen)
+
+            Bee = Bees(16, BLACK, 100, 100, True, (100,100))
+            Bee.animate_bee((100, 100), self.screen)
 
         self.frame += 1
         pygame.display.update()
@@ -179,6 +182,59 @@ class Map:
                     tile_image = self.tile_images[tile_type] # Matches it with the image using the dictionary
                     screen.blit(tile_image, (col * self.tile_size, row * self.tile_size)) # Displays them in order using their position in the array and size
 
+
+class Bees:
+    def __init__(self, size, color, health, speed, exists: bool, position):
+        self.sprite_sheet = pygame.image.load("images/bees/bee.png")
+        self.size = size
+        self.color = color
+        self.health = health
+        self.speed = speed
+        self.exists = exists
+        self.position = position
+        self.animation_frame = 0
+        self.animation_list = []
+        self.animation_steps = 6
+        self.animation_cooldown = 100
+
+        # Loop through the sprite sheet
+        for x in range(self.animation_steps):
+            # Get the inividual frames for the bee and append them to an array
+            self.animation_list.append(self.get_image(x, self.size, self.size))
+            print("frame", x, "appended to list")
+
+
+    def get_image(self, level, width, height):
+
+        # Create a surface to blit the image onto
+        image = pygame.Surface((width, height))
+
+        # Blit the frame of the bee onto the surface
+        image.blit(self.sprite_sheet, (0,0), ((level*width, 0, width, height)))
+
+        # Make the background transparent
+        image.set_colorkey(self.color)
+
+        return image
+    
+    def animate_bee(self, position, screen):
+        last_update = pygame.time.get_ticks()
+        current_time = pygame.time.get_ticks()
+        if current_time - last_update >= self.animation_cooldown:
+            last_update = current_time
+            self.animation_frame += 1
+
+            if self.animation_frame >= self.animation_steps:
+                self.animation_frame = 0
+
+        print("frame =", self.animation_frame)
+
+        self.draw_bee(self.animation_list[self.animation_frame], position, screen)
+
+
+    def draw_bee(self, bee_frame, position, screen):
+        screen.blit(bee_frame, position)
+        
 
 
 
