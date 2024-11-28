@@ -31,15 +31,21 @@ class Game:
 
         self.background_color_image = pygame.image.load("images/grass_background.png")
         self.bee_background_image = pygame.image.load("images/title_screen_bee.png")
+        self.title_text = pygame.image.load("images/Unbeetable_game_text.png")
 
+        self.screen = pygame.display.set_mode((self.screen_width, 960))
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.run_start_screen = True
         self.run_game = False
         self.clock = pygame.time.Clock()
+
+        self.frame = 0
         
         #Displays background images
         self.screen.blit(self.background_color_image, (0,0))
         self.screen.blit(self.bee_background_image, (0,0))
+        self.screen.blit(self.title_text, (80,20))
+
 
         # Displays buttons at start of code
         self.start_button = Button(GREEN, LIGHT_GREEN, "Start", (216, 550), 450, 100, self.display_game)
@@ -68,25 +74,33 @@ class Game:
             self.clock.tick(120)
             print(self.clock.get_fps())
 
+
     def display_menu(self):
+        print("displaying menu")
         # Create and display start button
         self.start_button.draw_button(self.screen)
 
         # Create and display quit button
         self.quit_button.draw_button(self.screen)
 
-        display_text("Unbeetable Game",(720, 100), 130, BLACK, self.screen)
-        display_text("Unbeetable Game",(717, 100), 130, LIGHT_GREEN, self.screen)
+        #display_text("Unbeetable Game",(720, 100), 130, BLACK, self.screen)
+        #display_text("Unbeetable Game",(717, 100), 130, LIGHT_GREEN, self.screen)
         pygame.display.update()
         
+
     def display_game(self):
-        self.screen.fill(WHITE)
-        self.run_start_screen = False
-        self.run_game = True
+        if self.frame <= 10:
+            self.screen.fill(WHITE)
+            self.run_start_screen = False
+            self.run_game = True
 
-        NewMap = Map()
-        NewMap.draw_tilemap()
+            self.screen_height = 960
+            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
+            NewMap = Map()
+            NewMap.draw_tilemap(self.screen)
+
+        self.frame += 1
         pygame.display.update()
 
 
@@ -147,16 +161,17 @@ class Map:
             [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1], 
             [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0], 
             [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0], 
-            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0]
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ]
 
         self.tile_images = {
-            0: grass_img,
-            1: path_img,
+            0: self.grass_img,
+            1: self.path_img,
         }
 
 
-    def draw_tilemap(self):
+    def draw_tilemap(self, screen):
             # Iterates through each element in the 2d array
             for row in range(len(self.tilemap)):
                 for col in range(len(self.tilemap[row])):
