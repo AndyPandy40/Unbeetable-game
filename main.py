@@ -23,12 +23,11 @@ def display_text(text, position, size, color, screen):
 
 
 
-class Game:
+class GameStartScreen:
     def __init__(self):
         self.screen_width = 1440
         self.screen_height = 864
-        self.money = 0
-        self.score = 0
+
 
         # Loads the background images
         self.background_color_image = pygame.image.load("images/grass_background.png")
@@ -66,19 +65,11 @@ class Game:
             self.clock.tick(120)
             #print(self.clock.get_fps())
 
-        while self.run_game:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.quit()
 
-            # Display the game
-            self.display_game()
-            self.clock.tick(120)
-            #print(self.clock.get_fps())
 
 
     def display_menu(self):
-        print("displaying menu")
+        #print("displaying menu")
         # Create and display start button
         self.start_button.draw_button(self.screen)
 
@@ -89,26 +80,52 @@ class Game:
         
 
     def display_game(self):
-        if self.frame <= 10:
-            self.screen.fill(WHITE)
-            self.run_start_screen = False
-            self.run_game = True
-
-            self.screen_height = 960
-            self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
-
-            NewMap = Map()
-            NewMap.draw_tilemap(self.screen)
-
-            Bee = Bees(16, BLACK, 100, 100, True, (100,100))
-            Bee.animate_bee((100, 100), self.screen)
-
-        self.frame += 1
-        pygame.display.update()
+        Game = MainGame(self.screen)
+        self.run_start_screen = False
+        Game.run_game()
 
 
     def quit(self):
         self.run_start_screen = False
+        pygame.quit()
+        exit()
+
+
+class MainGame:
+    def __init__(self, screen):
+        self.screen = screen
+        self.screen_width = 1440
+        self.clock = pygame.time.Clock()
+
+        self.screen_height = 960
+        self.screen.fill(WHITE)
+
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+
+        NewMap = Map()
+        NewMap.draw_tilemap(self.screen)
+        self.Bee = Bees(16, BLACK, 100, 100, True, (100,100))
+        
+
+    def run_game(self):
+        while self.run_game:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.quit()
+
+
+            self.Bee.animate_bee((100, 100), self.screen)
+            # Display the game
+            #self.display_game()
+            self.clock.tick(120)
+            #print(self.clock.get_fps())
+
+            pygame.display.update()
+
+    def display_game(self):
+        pass
+
+    def quit(self):
         pygame.quit()
         exit()
 
@@ -221,15 +238,18 @@ class Bees:
         last_update = pygame.time.get_ticks()
         current_time = pygame.time.get_ticks()
         if current_time - last_update >= self.animation_cooldown:
+
+            print(current_time)
+            print(last_update)
             last_update = current_time
             self.animation_frame += 1
 
             if self.animation_frame >= self.animation_steps:
                 self.animation_frame = 0
 
-        print("frame =", self.animation_frame)
-
         self.draw_bee(self.animation_list[self.animation_frame], position, screen)
+
+        pygame.display.update()
 
 
     def draw_bee(self, bee_frame, position, screen):
@@ -239,7 +259,7 @@ class Bees:
 
 
 
-NewGame = Game()
+NewGame = GameStartScreen()
 
 
 
