@@ -102,9 +102,9 @@ class MainGame:
 
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
-        NewMap = Map()
-        NewMap.draw_tilemap(self.screen)
-        self.Bee = Bees(16, BLACK, 100, 100, True, (100,100))
+        self.NewMap = Map()
+        self.NewMap.draw_tilemap(self.screen)
+        self.Bee = Bees(48, BLACK, 100, 100, True, (100,100))
         
 
     def run_game(self):
@@ -115,8 +115,10 @@ class MainGame:
 
 
             self.Bee.animate_bee((100, 100), self.screen)
+
+            self.NewMap.draw_tilemap(self.screen)
+            
             # Display the game
-            #self.display_game()
             self.clock.tick(120)
             #print(self.clock.get_fps())
 
@@ -214,6 +216,9 @@ class Bees:
         self.animation_steps = 6
         self.animation_cooldown = 100
 
+        self.last_update = pygame.time.get_ticks()
+        self.current_time = pygame.time.get_ticks()
+
         # Loop through the sprite sheet
         for x in range(self.animation_steps):
             # Get the inividual frames for the bee and append them to an array
@@ -235,25 +240,24 @@ class Bees:
         return image
     
     def animate_bee(self, position, screen):
-        last_update = pygame.time.get_ticks()
-        current_time = pygame.time.get_ticks()
-        if current_time - last_update >= self.animation_cooldown:
 
-            print(current_time)
-            print(last_update)
-            last_update = current_time
+        self.current_time = pygame.time.get_ticks()
+
+        if self.current_time - self.last_update >= self.animation_cooldown:
+
+
+            self.last_update = self.current_time
             self.animation_frame += 1
 
             if self.animation_frame >= self.animation_steps:
                 self.animation_frame = 0
+                print("reseting animation")
 
-        self.draw_bee(self.animation_list[self.animation_frame], position, screen)
+        screen.blit(self.animation_list[self.animation_frame], position)
 
         pygame.display.update()
 
 
-    def draw_bee(self, bee_frame, position, screen):
-        screen.blit(bee_frame, position)
         
 
 
