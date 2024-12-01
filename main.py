@@ -34,13 +34,14 @@ class GameStartScreen:
         self.bee_background_image = pygame.image.load("images/title_screen_bee.png")
         self.title_text = pygame.image.load("images/Unbeetable_game_text.png")
 
+        # Sets up the screen
         self.screen = pygame.display.set_mode((self.screen_width, 960))
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.run_start_screen = True
         self.run_game = False
-        self.clock = pygame.time.Clock()
 
-        self.frame = 0
+
+        self.clock = pygame.time.Clock()
         
         # Displays background images and text
         self.screen.blit(self.background_color_image, (0,0))
@@ -60,7 +61,7 @@ class GameStartScreen:
                 if event.type == pygame.QUIT:
                     self.quit()
 
-            # Display the menu
+            # Display the menu at 120 fps
             self.display_menu()
             self.clock.tick(120)
             #print(self.clock.get_fps())
@@ -70,17 +71,21 @@ class GameStartScreen:
 
     def display_menu(self):
         #print("displaying menu")
-        # Create and display start button
+        # Update start button
         self.start_button.draw_button(self.screen)
 
-        # Create and display quit button
+        # Update quit button
         self.quit_button.draw_button(self.screen)
 
         pygame.display.update()
         
 
     def display_game(self):
+
+        # Creates a game class
         Game = MainGame(self.screen)
+        
+        # Stops the previous main loop from running
         self.run_start_screen = False
         Game.run_game()
 
@@ -93,17 +98,20 @@ class GameStartScreen:
 
 class MainGame:
     def __init__(self, screen):
+
+        # Sets up the screen
         self.screen = screen
         self.screen_width = 1440
-        self.clock = pygame.time.Clock()
-
         self.screen_height = 960
-        self.screen.fill(WHITE)
-
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
+        self.clock = pygame.time.Clock()
+
+        # Initialises and draws the tilemap
         self.NewMap = Map()
         self.NewMap.draw_tilemap(self.screen)
+
+        # Initialises a bee
         self.Bee = Bees(48, BLACK, 100, 100, True, (100,100))
         
 
@@ -113,19 +121,15 @@ class MainGame:
                 if event.type == pygame.QUIT:
                     self.quit()
 
-
+            # Updates the tilemap and bee
+            self.NewMap.draw_tilemap(self.screen)
             self.Bee.animate_bee((100, 100), self.screen)
 
-            self.NewMap.draw_tilemap(self.screen)
-            
-            # Display the game
+            # Display the game at 120 fps
             self.clock.tick(120)
             #print(self.clock.get_fps())
 
             pygame.display.update()
-
-    def display_game(self):
-        pass
 
     def quit(self):
         pygame.quit()
@@ -142,8 +146,11 @@ class Button:
         self.height = height
         self.action = action
 
+        # Calculate the centre of the button
         self.button_center = ((self.position[0] + (self.width//2)), self.position[1] + (self.height//2))
+
     def draw_button(self, screen):
+        # Get the position of the mouse and see if the user is clicking
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
 
@@ -152,29 +159,30 @@ class Button:
         if self.position[0] < mouse[0] < self.position[0] + self.width and self.position[1] < mouse[1] < self.position[1] + self.height:
             button_color = self.active_color
             if click[0]:
+                # Preform the button's action if the user clicks
                 self.action()
         else:
             button_color = self.inactive_color
 
+        # Draw a rectangle for the button
         pygame.draw.rect(screen, button_color, (self.position[0], self.position[1], self.width, self.height))
-
-        
         
         # Display text on button
         display_text(self.text, self.button_center, 60, BLACK, screen)
-
 
 class Map:
     def __init__(self):
         self.tile_size = 96
 
-        self.grass_img = pygame.image.load("images/tiles/grass.png")
+        # Sets up the grass img
+        self.grass_img = pygame.image.load("images/tiles/grass.png").convert()
         self.grass_img = pygame.transform.scale(self.grass_img, (self.tile_size, self.tile_size))
- 
-        self.path_img = pygame.image.load("images/tiles/path.png")
+
+        # Sets up the path img
+        self.path_img = pygame.image.load("images/tiles/path.png").convert()
         self.path_img = pygame.transform.scale(self.path_img, (self.tile_size, self.tile_size))
 
-        self.tilemap = [ 
+        self.tilemap = [
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
             [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0], 
             [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0], 
@@ -187,6 +195,7 @@ class Map:
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ]
 
+        # A dictionary to map the numbers (1 and 0) to their images
         self.tile_images = {
             0: self.grass_img,
             1: self.path_img,
@@ -194,23 +203,32 @@ class Map:
 
 
     def draw_tilemap(self, screen):
-            # Iterates through each element in the 2d array
-            for row in range(len(self.tilemap)):
-                for col in range(len(self.tilemap[row])):
-                    tile_type = self.tilemap[row][col] # Finds the tile type at a position (1 or 0)
-                    tile_image = self.tile_images[tile_type] # Matches it with the image using the dictionary
-                    screen.blit(tile_image, (col * self.tile_size, row * self.tile_size)) # Displays them in order using their position in the array and size
+        # Iterates through each element in the 2d array
+        for row in range(len(self.tilemap)):
+            for col in range(len(self.tilemap[row])):
+                # Finds the tile type at a position (1 or 0)
+                tile_type = self.tilemap[row][col] 
+
+                # Matches it with the image using the dictionary
+                tile_image = self.tile_images[tile_type] 
+
+                # Displays them in order using their position in the array and size
+                screen.blit(tile_image, (col * self.tile_size, row * self.tile_size)) 
+
+                # THIS COULD BE OPTIMISED TO ONLY BE DONE ONCE
 
 
 class Bees:
     def __init__(self, size, color, health, speed, exists: bool, position):
-        self.sprite_sheet = pygame.image.load("images/bees/bee.png")
+        self.sprite_sheet = pygame.image.load("images/bees/bee.png").convert_alpha()
         self.size = size
         self.color = color
         self.health = health
         self.speed = speed
         self.exists = exists
         self.position = position
+
+        # Set up everything needed for the animation
         self.animation_frame = 0
         self.animation_list = []
         self.animation_steps = 6
@@ -243,30 +261,25 @@ class Bees:
 
         self.current_time = pygame.time.get_ticks()
 
+        # Check if it's time to update the frame
         if self.current_time - self.last_update >= self.animation_cooldown:
-
-
             self.last_update = self.current_time
+
+            # Go to the next frame in the animation
             self.animation_frame += 1
 
             if self.animation_frame >= self.animation_steps:
+                # Loop back to the first frame if it goes over the animation steps
                 self.animation_frame = 0
-                print("reseting animation")
+                #print("reseting animation")
 
+        # Displays the current animation frame on the screen
         screen.blit(self.animation_list[self.animation_frame], position)
 
         pygame.display.update()
 
-
-        
-
-
-
-
+# Initialises and sstarts the starting screen
 NewGame = GameStartScreen()
-
-
-
 NewGame.run()
 
     
