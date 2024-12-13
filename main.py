@@ -1,6 +1,8 @@
 import pygame
 pygame.init()
 
+# Tile_size_constant
+TILE_SIZE = 96
 
 # Colour constants
 GREEN = (0, 255, 0)
@@ -112,7 +114,7 @@ class MainGame:
         self.NewMap.draw_tilemap(self.screen)
 
         # Initialises a bee
-        self.Bee = Bees(48, BLACK, 100, 100, True, (100,100))
+        self.Bee = Bees(48, BLACK, 100, 100, True, (1400,420))
         
 
     def run_game(self):
@@ -121,14 +123,18 @@ class MainGame:
                 if event.type == pygame.QUIT:
                     self.quit()
 
+            #print(self.clock.get_fps())
+
             # Updates the tilemap and bee
             self.NewMap.draw_tilemap(self.screen)
             self.Bee.animate_bee((100, 100), self.screen)
+            
+
+            
+            self.Bee.what_tile_am_I_on()
 
             # Display the game at 120 fps
             self.clock.tick(120)
-            #print(self.clock.get_fps())
-
             pygame.display.update()
 
     def quit(self):
@@ -172,15 +178,14 @@ class Button:
 
 class Map:
     def __init__(self):
-        self.tile_size = 96
 
         # Sets up the grass img
         self.grass_img = pygame.image.load("images/tiles/grass.png").convert()
-        self.grass_img = pygame.transform.scale(self.grass_img, (self.tile_size, self.tile_size))
+        self.grass_img = pygame.transform.scale(self.grass_img, (TILE_SIZE, TILE_SIZE))
 
         # Sets up the path img
         self.path_img = pygame.image.load("images/tiles/path.png").convert()
-        self.path_img = pygame.transform.scale(self.path_img, (self.tile_size, self.tile_size))
+        self.path_img = pygame.transform.scale(self.path_img, (TILE_SIZE, TILE_SIZE))
 
         self.tilemap = [
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
@@ -201,6 +206,14 @@ class Map:
             1: self.path_img,
         }
 
+        # Set up everything for pathfinding
+        self.frontier = []
+        self.explored = []
+
+        self.distances = {}
+
+        self.target_tile = (14,4)
+
 
     def draw_tilemap(self, screen):
         # Iterates through each element in the 2d array
@@ -213,9 +226,32 @@ class Map:
                 tile_image = self.tile_images[tile_type] 
 
                 # Displays them in order using their position in the array and size
-                screen.blit(tile_image, (col * self.tile_size, row * self.tile_size)) 
+                screen.blit(tile_image, (col * TILE_SIZE, row * TILE_SIZE)) 
 
                 # THIS COULD BE OPTIMISED TO ONLY BE DONE ONCE
+
+    def find_tile(self, position):
+
+        x_tile = position[0] // TILE_SIZE
+
+        y_tile = position[1] // TILE_SIZE
+
+        return x_tile, y_tile
+        #return (x_tile, y_tile)
+
+    def calc_tile_distances(self):
+        print(self.target_tile) # target tile = (14,4)
+
+        self.distances[self.target_tile]=0
+
+
+        self.frontier.extend([(13,4), (14,5), (14, 3)]) #left, down, up
+
+        while not self.frontier:
+            #add this
+            pass
+
+
 
 
 class Bees:
@@ -257,7 +293,7 @@ class Bees:
 
         return image
     
-    def animate_bee(self, position, screen):
+    def animate_bee(self, position, screen): #TODO FIXME the postion variable here it really really weird
 
         self.current_time = pygame.time.get_ticks()
 
@@ -274,9 +310,21 @@ class Bees:
                 #print("reseting animation")
 
         # Displays the current animation frame on the screen
-        screen.blit(self.animation_list[self.animation_frame], position)
+        screen.blit(self.animation_list[self.animation_frame], self.position)
 
         pygame.display.update()
+
+    def what_tile_am_I_on(self):
+        x_tile = self.position[0] // TILE_SIZE
+
+        y_tile = self.position[1] // TILE_SIZE
+
+        print("my position is", self.position[0], self.position[1])
+        print("I am on x tile", x_tile)
+        print("I am on y tile", y_tile)
+
+        return x_tile, y_tile
+        #return (x_tile, y_tile)
 
 # Initialises and sstarts the starting screen
 NewGame = GameStartScreen()
