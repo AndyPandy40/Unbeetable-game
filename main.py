@@ -127,7 +127,7 @@ class MainGame:
 
             # Updates the tilemap and bee
             self.NewMap.draw_tilemap(self.screen)
-            self.Bee.animate_bee((100, 100), self.screen)
+            self.Bee.animate_bee(self.screen)
             
 
             
@@ -206,6 +206,13 @@ class Map:
             1: self.path_img,
         }
 
+        self.target_tile = (14,4)
+
+        self.frontier = []
+        self.explored = []
+
+        self.distances = {}
+
 
     def draw_tilemap(self, screen):
         # Iterates through each element in the 2d array
@@ -221,6 +228,35 @@ class Map:
                 screen.blit(tile_image, (col * TILE_SIZE, row * TILE_SIZE)) 
 
                 # THIS COULD BE OPTIMISED TO ONLY BE DONE ONCE
+
+    def calc_tile_distances(self):
+        print("Target tile =", self.target_tile) # target is 14,4
+
+        self.distances[self.target_tile] = 0
+
+        self.frontier.extend[(13,4), (14, 3), (14, 5)] # left, up, down
+
+        while self.frontier:
+            if self.frontier[0] not in self.explored:
+                
+                # figure out how i will do the distances
+
+
+                left_tile = ((self.frontier[0][0])-1, self.frontier[0][1])
+                up_tile = (self.frontier[0][0], self.frontier[0][1]-1)
+                right_tile = (self.frontier[0][0]+1, self.frontier[0][1])
+                down_tile = (self.frontier[0][0], (self.frontier[0][1]+1))
+
+
+                # TODO combine these somehow to consider edge cases eg top left edge (might not have to bother though)
+                if 0 > (left_tile[0] or right_tile[0]) > 14:  # check if it is also a field tile
+                    self.frontier.append(up_tile, down_tile)
+                else:
+                    self.frontier.append(left_tile, up_tile, right_tile, down_tile)
+
+                if 0 > (up_tile[0] or down_tile[0]) > 9: # TODO check this is right (9) also check it's not a field tile
+                    self.frontier.append(left_tile, right_tile) 
+                    
 
 
 class Bees:
@@ -262,7 +298,7 @@ class Bees:
 
         return image
     
-    def animate_bee(self, position, screen): #TODO FIXME the postion variable here it really really weird
+    def animate_bee(self, screen):
 
         self.current_time = pygame.time.get_ticks()
 
