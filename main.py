@@ -114,7 +114,7 @@ class MainGame:
         self.NewMap.draw_tilemap(self.screen)
 
         # Initialises a bee
-        self.Bee = Bees(48, BLACK, 100, 100, True, (1400,420))
+        self.Bee = Bees(48, BLACK, 100, 100, True, (500,500))
         
 
     def run_game(self):
@@ -322,9 +322,6 @@ class Bees:
         print("my position is", self.position[0], self.position[1])
         print("I am on x tile", x_tile)
         print("I am on y tile", y_tile)
-
-        return x_tile, y_tile
-        #return (x_tile, y_tile)
 
 # Initialises and sstarts the starting screen
 NewGame = GameStartScreen()
