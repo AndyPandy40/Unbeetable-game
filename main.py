@@ -114,7 +114,9 @@ class MainGame:
         self.NewMap.draw_tilemap(self.screen)
 
         # Initialises a bee
-        self.Bee = Bees(48, BLACK, 100, 100, True, (500,500))
+        self.Bee = Bees(48, BLACK, 100, 100, True, (850,900))
+
+        self.NewMap.calc_tile_distances()
         
 
     def run_game(self):
@@ -208,6 +210,7 @@ class Map:
 
         # Set up everything for pathfinding
         self.frontier = []
+
         self.explored = []
 
         self.distances = {}
@@ -235,9 +238,11 @@ class Map:
 
         self.distances[self.target_tile] = 0
 
-        self.frontier.extend[(13,4), (14, 3), (14, 5)] # left, up, down
+        self.frontier.append(self.target_tile)
 
-        while self.frontier:
+        while len(self.frontier) != 0:
+
+        #for _ in range (5):
             if self.frontier[0] not in self.explored:
                 
                 # figure out how i will do the distances
@@ -249,14 +254,56 @@ class Map:
                 down_tile = (self.frontier[0][0], (self.frontier[0][1]+1))
 
 
-                # TODO combine these somehow to consider edge cases eg top left edge (might not have to bother though)
-                if 0 > (left_tile[0] or right_tile[0]) > 14:  # check if it is also a field tile
-                    self.frontier.append(up_tile, down_tile)
-                else:
-                    self.frontier.append(left_tile, up_tile, right_tile, down_tile)
 
-                if 0 > (up_tile[0] or down_tile[0]) > 9: # TODO check this is right (9) also check it's not a field tile
-                    self.frontier.append(left_tile, right_tile) 
+                if 0 < (left_tile[0]) < 14:
+                    self.frontier.append(left_tile)
+                    self.distances[left_tile] = (self.distances[self.frontier[0]] + 1)
+
+
+                if 0 < (right_tile[0]) < 14:
+                    self.frontier.append(right_tile)
+                    self.distances[right_tile] = (self.distances[self.frontier[0]] + 1)
+                if 0 < up_tile[1] < 9:
+                    self.frontier.append(up_tile)
+                    self.distances[up_tile] = (self.distances[self.frontier[0]] + 1)
+                if 0 < down_tile[1] < 9:
+                    self.frontier.append(down_tile)
+                    self.distances[down_tile] = (self.distances[self.frontier[0]] + 1)
+
+
+
+                self.explored.append(self.frontier[0])
+
+
+
+                print("before pop", self.frontier)
+
+                self.frontier.pop(0)
+
+                print("after pop", self.frontier)
+
+                
+
+                
+
+                print("frontier:", self.frontier)
+                print(self.distances)
+                print("Explored nodes:", self.explored)
+            
+            else:
+                self.frontier.pop(0) 
+                print("popped first item")
+
+
+        
+        print("final explored nodes:", self.explored)
+        print("final distances", self.distances)
+
+        for distance in self.distances():  #function that could display distances
+            pass
+               
+
+
                     
 
     def find_tile(self, position):
@@ -267,6 +314,9 @@ class Map:
 
         return x_tile, y_tile
         #return (x_tile, y_tile)
+
+    def get_tile_type(self, position):
+        return self.tilemap[position]
 
 
 class Bees:
@@ -292,7 +342,7 @@ class Bees:
         for x in range(self.animation_steps):
             # Get the inividual frames for the bee and append them to an array
             self.animation_list.append(self.get_image(x, self.size, self.size))
-            print("frame", x, "appended to list")
+            #print("frame", x, "appended to list")
 
 
     def get_image(self, level, width, height):
@@ -334,9 +384,9 @@ class Bees:
 
         y_tile = self.position[1] // TILE_SIZE
 
-        print("my position is", self.position[0], self.position[1])
-        print("I am on x tile", x_tile)
-        print("I am on y tile", y_tile)
+        #print("my position is", self.position[0], self.position[1])
+        #print("I am on x tile", x_tile)
+        #print("I am on y tile", y_tile)
 
 # Initialises and sstarts the starting screen
 NewGame = GameStartScreen()
