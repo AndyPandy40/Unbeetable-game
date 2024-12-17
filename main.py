@@ -236,62 +236,60 @@ class Map:
     def calc_tile_distances(self):
         print("Target tile =", self.target_tile) # target is 14,4
 
+
+        # The first tile has a distance of one
         self.distances[self.target_tile] = 0
 
+        # Add the first tile to the frontier
         self.frontier.append(self.target_tile)
 
+        # While there is something left in the frontier
         while len(self.frontier) != 0:
-
-        #for _ in range (5):
+            # Check it hasn't already been calculated
             if self.frontier[0] not in self.explored:
                 
-                # figure out how i will do the distances
+                
 
 
+                # Find the left, above right and below tile
                 left_tile = ((self.frontier[0][0])-1, self.frontier[0][1])
                 up_tile = (self.frontier[0][0], self.frontier[0][1]-1)
                 right_tile = (self.frontier[0][0]+1, self.frontier[0][1])
                 down_tile = (self.frontier[0][0], (self.frontier[0][1]+1))
 
 
-
-                if 0 < (left_tile[0]) < 14:
+                # Check if the tile we're appending is on the map and set it's distance to be one more than the current one
+                if -1 < (left_tile[0]) < 14:
                     self.frontier.append(left_tile)
                     self.distances[left_tile] = (self.distances[self.frontier[0]] + 1)
-
-
-                if 0 < (right_tile[0]) < 14:
+                if -1 < (right_tile[0]) < 14:
                     self.frontier.append(right_tile)
                     self.distances[right_tile] = (self.distances[self.frontier[0]] + 1)
-                if 0 < up_tile[1] < 9:
+                if -1 < up_tile[1] < 9:
                     self.frontier.append(up_tile)
                     self.distances[up_tile] = (self.distances[self.frontier[0]] + 1)
-                if 0 < down_tile[1] < 9:
+                if -1 < down_tile[1] < 9:
                     self.frontier.append(down_tile)
                     self.distances[down_tile] = (self.distances[self.frontier[0]] + 1)
 
 
-
+                # Say that is has already been explored once we're done with it
                 self.explored.append(self.frontier[0])
 
-
-
-                print("before pop", self.frontier)
-
+                # Remove it from the queue as we've already explored it
                 self.frontier.pop(0)
 
-                print("after pop", self.frontier)
 
-                
+                print("tile_type:", self.check_if_field_tile(self.frontier[0]))
 
-                
-
-                print("frontier:", self.frontier)
-                print(self.distances)
-                print("Explored nodes:", self.explored)
+                #print("frontier:", self.frontier)
+                #print(self.distances)
+                #print("Explored nodes:", self.explored)
             
             else:
-                self.frontier.pop(0) 
+
+                # If it has been calculated remove it from the frontier
+                self.frontier.pop(0)
                 print("popped first item")
 
 
@@ -299,24 +297,25 @@ class Map:
         print("final explored nodes:", self.explored)
         print("final distances", self.distances)
 
-        for distance in self.distances():  #function that could display distances
-            pass
-               
+        for key in self.distances:
+            print(key)
+
+    def check_if_field_tile(self,tile):
+
+        tile_x_pos = tile[0]
+        tile_y_pos = tile[1]
+
+        print(tile_x_pos)
+        print(tile_y_pos)
+
+        tile_type = self.tilemap[tile_y_pos][tile_x_pos]
+        print(tile)
+        if tile_type == 1:
+            return True
+        else:
+            return False
 
 
-                    
-
-    def find_tile(self, position):
-
-        x_tile = position[0] // TILE_SIZE
-
-        y_tile = position[1] // TILE_SIZE
-
-        return x_tile, y_tile
-        #return (x_tile, y_tile)
-
-    def get_tile_type(self, position):
-        return self.tilemap[position]
 
 
 class Bees:
@@ -388,7 +387,7 @@ class Bees:
         #print("I am on x tile", x_tile)
         #print("I am on y tile", y_tile)
 
-# Initialises and sstarts the starting screen
+# Initialises and starts the starting screen
 NewGame = GameStartScreen()
 NewGame.run()
 
