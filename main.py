@@ -15,6 +15,8 @@ WHITE = (255, 255, 255)
 
 # Function to make displaying text easier
 def display_text(text, position, size, color, screen):
+
+    text = str(text)
     font = pygame.font.Font("freesansbold.ttf", size)
     text = font.render(text, True, color)
 
@@ -131,7 +133,7 @@ class MainGame:
             self.NewMap.draw_tilemap(self.screen)
             self.Bee.animate_bee(self.screen)
             
-
+            self.NewMap.display_distances(self.screen)
             
             self.Bee.what_tile_am_I_on()
 
@@ -297,8 +299,13 @@ class Map:
         print("final explored nodes:", self.explored)
         print("final distances", self.distances)
 
+
+    def display_distances(self, screen):
+        # Print distances on tiles
         for key in self.distances:
-            print(key)
+            text_x_pos = (key[0] * TILE_SIZE) + 50
+            text_y_pos = (key[1]* TILE_SIZE) + 50
+            display_text(str(self.distances[key]-2), (text_x_pos, text_y_pos), 50, BLACK, screen)
 
     def check_if_field_tile(self,tile):
 
