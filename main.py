@@ -135,10 +135,10 @@ class MainGame:
             
             self.NewMap.display_distances(self.screen)
             
-            self.Bee.what_tile_am_I_on()
+            #self.Bee.what_tile_am_I_on()
 
             # Display the game at 120 fps
-            self.clock.tick(120)
+            self.clock.tick(1000)
             pygame.display.update()
 
     def quit(self):
@@ -217,7 +217,7 @@ class Map:
 
         self.distances = {}
 
-        self.target_tile = (14,4)
+        self.target_tile = (15,4)
 
 
     def draw_tilemap(self, screen):
@@ -236,7 +236,7 @@ class Map:
                 # THIS COULD BE OPTIMISED TO ONLY BE DONE ONCE
 
     def calc_tile_distances(self):
-        print("Target tile =", self.target_tile) # target is 14,4
+        print("Target tile =", self.target_tile) # target is 15,4
 
 
         # The first tile has a distance of one
@@ -248,51 +248,56 @@ class Map:
         # While there is something left in the frontier
         while len(self.frontier) != 0:
             # Check it hasn't already been calculated
-            if self.frontier[0] not in self.explored:
-                
-                
 
-
-                # Find the left, above right and below tile
-                left_tile = ((self.frontier[0][0])-1, self.frontier[0][1])
-                up_tile = (self.frontier[0][0], self.frontier[0][1]-1)
-                right_tile = (self.frontier[0][0]+1, self.frontier[0][1])
-                down_tile = (self.frontier[0][0], (self.frontier[0][1]+1))
-
-
-                # Check if the tile we're appending is on the map and set it's distance to be one more than the current one
-                if -1 < (left_tile[0]) < 14:
-                    self.frontier.append(left_tile)
-                    self.distances[left_tile] = (self.distances[self.frontier[0]] + 1)
-                if -1 < (right_tile[0]) < 14:
-                    self.frontier.append(right_tile)
-                    self.distances[right_tile] = (self.distances[self.frontier[0]] + 1)
-                if -1 < up_tile[1] < 9:
-                    self.frontier.append(up_tile)
-                    self.distances[up_tile] = (self.distances[self.frontier[0]] + 1)
-                if -1 < down_tile[1] < 9:
-                    self.frontier.append(down_tile)
-                    self.distances[down_tile] = (self.distances[self.frontier[0]] + 1)
-
-
-                # Say that is has already been explored once we're done with it
-                self.explored.append(self.frontier[0])
-
-                # Remove it from the queue as we've already explored it
+            if self.check_if_field_tile(self.frontier[0]) == True:
+                self.distances[self.frontier[0]] = 99
                 self.frontier.pop(0)
-
-
-                print("tile_type:", self.check_if_field_tile(self.frontier[0]))
-
-                #print("frontier:", self.frontier)
-                #print(self.distances)
-                #print("Explored nodes:", self.explored)
-            
             else:
+                if self.frontier[0] not in self.explored:
+                    
+                    
 
-                # If it has been calculated remove it from the frontier
-                self.frontier.pop(0)
-                print("popped first item")
+
+                    # Find the left, above right and below tile
+                    left_tile = ((self.frontier[0][0])-1, self.frontier[0][1])
+                    up_tile = (self.frontier[0][0], self.frontier[0][1]-1)
+                    right_tile = (self.frontier[0][0]+1, self.frontier[0][1])
+                    down_tile = (self.frontier[0][0], (self.frontier[0][1]+1))
+
+
+                    # Check if the tile we're appending is on the map and set it's distance to be one more than the current one
+                    if -1 < (left_tile[0]) < 15:
+                        self.frontier.append(left_tile)
+                        self.distances[left_tile] = (self.distances[self.frontier[0]] + 1)
+                    if -1 < (right_tile[0]) < 15:
+                        self.frontier.append(right_tile)
+                        self.distances[right_tile] = (self.distances[self.frontier[0]] + 1)
+                    if -1 < up_tile[1] < 10:
+                        self.frontier.append(up_tile)
+                        self.distances[up_tile] = (self.distances[self.frontier[0]] + 1)
+                    if -1 < down_tile[1] < 10:
+                        self.frontier.append(down_tile)
+                        self.distances[down_tile] = (self.distances[self.frontier[0]] + 1)
+
+
+                    # Say that is has already been explored once we're done with it
+                    self.explored.append(self.frontier[0])
+
+                    # Remove it from the queue as we've already explored it
+                    self.frontier.pop(0)
+
+
+                    print("tile_type:", self.check_if_field_tile(self.frontier[0]))
+
+                    #print("frontier:", self.frontier)
+                    #print(self.distances)
+                    #print("Explored nodes:", self.explored)
+                
+                else:
+
+                    # If it has been calculated remove it from the frontier
+                    self.frontier.pop(0)
+                    print("popped first item")
 
 
         
@@ -309,15 +314,15 @@ class Map:
 
     def check_if_field_tile(self,tile):
 
-        tile_x_pos = tile[0]
-        tile_y_pos = tile[1]
+        tile_y_pos = tile[0]
+        tile_x_pos = tile[1]
 
         print(tile_x_pos)
         print(tile_y_pos)
 
-        tile_type = self.tilemap[tile_y_pos][tile_x_pos]
+        tile_type = self.tilemap[tile_x_pos][tile_y_pos]
         print(tile)
-        if tile_type == 1:
+        if tile_type == 0:
             return True
         else:
             return False
