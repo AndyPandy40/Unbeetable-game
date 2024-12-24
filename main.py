@@ -16,7 +16,7 @@ WHITE = (255, 255, 255)
 # Function to make displaying text easier
 def display_text(text, position, size, color, screen):
 
-    text = str(text)
+    text = str(text).strip()
     font = pygame.font.Font("freesansbold.ttf", size)
     text = font.render(text, True, color)
 
@@ -118,7 +118,7 @@ class MainGame:
         # Initialises a bee
         self.Bee = Bees(48, BLACK, 100, 100, True, (850,900))
 
-        self.NewMap.calc_tile_distances()
+        self.NewMap.calc_tile_distances(self.screen)
         
 
     def run_game(self):
@@ -130,15 +130,17 @@ class MainGame:
             #print(self.clock.get_fps())
 
             # Updates the tilemap and bee
-            self.NewMap.draw_tilemap(self.screen)
-            self.Bee.animate_bee(self.screen)
+            #self.NewMap.draw_tilemap(self.screen)
+            #self.Bee.animate_bee(self.screen)
             
             self.NewMap.display_distances(self.screen)
+
+            #self.NewMap.display_tile_positions(self.screen)
             
             #self.Bee.what_tile_am_I_on()
 
             # Display the game at 120 fps
-            self.clock.tick(1000)
+            self.clock.tick(120)
             pygame.display.update()
 
     def quit(self):
@@ -235,7 +237,7 @@ class Map:
 
                 # THIS COULD BE OPTIMISED TO ONLY BE DONE ONCE
 
-    def calc_tile_distances(self):
+    def calc_tile_distances(self, screen):
         print("Target tile =", self.target_tile) # target is 15,4
 
 
@@ -266,38 +268,44 @@ class Map:
 
 
                     # Check if the tile we're appending is on the map and set it's distance to be one more than the current one
-                    if -1 < (left_tile[0]) < 15:
+                    if (-1 < (left_tile[0]) < 15) and left_tile not in self.explored:
                         self.frontier.append(left_tile)
                         self.distances[left_tile] = (self.distances[self.frontier[0]] + 1)
-                    if -1 < (right_tile[0]) < 15:
+                    if (-1 < (right_tile[0]) < 15) and right_tile not in self.explored:
                         self.frontier.append(right_tile)
                         self.distances[right_tile] = (self.distances[self.frontier[0]] + 1)
-                    if -1 < up_tile[1] < 10:
+                    if (-1 < up_tile[1] < 10) and up_tile not in self.explored:
                         self.frontier.append(up_tile)
                         self.distances[up_tile] = (self.distances[self.frontier[0]] + 1)
-                    if -1 < down_tile[1] < 10:
+                    if (-1 < down_tile[1] < 10) and down_tile not in self.explored:
                         self.frontier.append(down_tile)
                         self.distances[down_tile] = (self.distances[self.frontier[0]] + 1)
 
 
                     # Say that is has already been explored once we're done with it
                     self.explored.append(self.frontier[0])
+                    print(self.frontier[0], "is explored")
 
                     # Remove it from the queue as we've already explored it
                     self.frontier.pop(0)
 
 
-                    print("tile_type:", self.check_if_field_tile(self.frontier[0]))
+                    #print("tile_type:", self.check_if_field_tile(self.frontier[0]))
 
                     #print("frontier:", self.frontier)
                     #print(self.distances)
                     #print("Explored nodes:", self.explored)
+
+                    print("distance to", self.frontier[0],"is", self.distances[self.frontier[0]])
+
+
+
                 
                 else:
 
                     # If it has been calculated remove it from the frontier
                     self.frontier.pop(0)
-                    print("popped first item")
+                    #print("popped first item")
 
 
         
@@ -310,18 +318,25 @@ class Map:
         for key in self.distances:
             text_x_pos = (key[0] * TILE_SIZE) + 50
             text_y_pos = (key[1]* TILE_SIZE) + 50
-            display_text(str(self.distances[key]-2), (text_x_pos, text_y_pos), 50, BLACK, screen)
+            display_text(str(self.distances[key]), (text_x_pos, text_y_pos), 50, BLACK, screen)
+
+    def display_tile_positions(self, screen):
+        for key in self.distances:
+            text_x_pos = (key[0] * TILE_SIZE) + 50
+            text_y_pos = (key[1]* TILE_SIZE) + 50
+            coords = f"({key[0]}, {key[1]})" 
+            display_text(coords, (text_x_pos, text_y_pos), 32, BLACK, screen)
 
     def check_if_field_tile(self,tile):
 
         tile_y_pos = tile[0]
         tile_x_pos = tile[1]
 
-        print(tile_x_pos)
-        print(tile_y_pos)
+        #print(tile_x_pos)
+        #print(tile_y_pos)
 
         tile_type = self.tilemap[tile_x_pos][tile_y_pos]
-        print(tile)
+        #print(tile)
         if tile_type == 0:
             return True
         else:
