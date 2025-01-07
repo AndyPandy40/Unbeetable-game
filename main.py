@@ -11,6 +11,7 @@ RED = (255, 0, 0)
 LIGHT_RED = (200, 0, 0)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+YELLOW = (225,225,0)
 
 
 # Function to make displaying text easier
@@ -108,6 +109,9 @@ class MainGame:
         self.screen_width = 1440
         self.screen_height = 960
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        self.heart_image =  pygame.image.load("images/heart.png")
+        self.heart_image = pygame.transform.scale(self.heart_image, (27, 27))
+        
 
         self.clock = pygame.time.Clock()
 
@@ -116,9 +120,14 @@ class MainGame:
         self.NewMap.draw_tilemap(self.screen)
 
         # Initialises a bee
-        self.Bee = Bees(48, BLACK, 100, 100, True, (850,900))
+        self.Bee = Bees(48, BLACK, 100, 1, True, (20,250))
 
-        self.NewMap.calc_tile_distances(self.screen)
+        self.NewMap.calc_tile_distances()
+        self.mapVectors = self.NewMap.get_vectors()
+
+
+        self.score = 0
+        self.lives = 5
         
 
     def run_game(self):
@@ -130,14 +139,25 @@ class MainGame:
             #print(self.clock.get_fps())
 
             # Updates the tilemap and bee
-            #self.NewMap.draw_tilemap(self.screen)
-            #self.Bee.animate_bee(self.screen)
+            self.NewMap.draw_tilemap(self.screen)
+            self.Bee.animate_bee(self.screen)
             
-            self.NewMap.display_distances(self.screen)
+            #self.NewMap.display_distances(self.screen)
 
             #self.NewMap.display_tile_positions(self.screen)
-            
-            #self.Bee.what_tile_am_I_on()
+
+            #self.NewMap.display_vectors(self.screen)
+
+            self.display_score()
+            self.display_lives()
+
+            if self.Bee.exists == True:
+                bee_tile = self.Bee.what_tile_am_I_on()
+                bee_vector = self.mapVectors[bee_tile]
+                bee_vector = (bee_vector[0]*self.Bee.speed, bee_vector[1] * self.Bee.speed)
+                print(bee_vector)
+
+                self.Bee.change_position(bee_vector[0], bee_vector[1])
 
             # Display the game at 120 fps
             self.clock.tick(120)
@@ -146,6 +166,15 @@ class MainGame:
     def quit(self):
         pygame.quit()
         exit()
+
+    def display_score(self):
+        score_string = ("Score: " + str(self.score))
+        display_text(score_string, (1130,40), 25, YELLOW, self.screen)
+
+    def display_lives(self):
+        lives_string = (str(self.lives)+"/5")
+        display_text(lives_string, (1330,42), 25, RED, self.screen)
+        self.screen.blit(self.heart_image, (1280, 25))
 
 
 class Button:
@@ -214,12 +243,11 @@ class Map:
 
         # Set up everything for pathfinding
         self.frontier = []
-
+        self.distances = {}
+        self.target_tile = (15,4)
         self.explored = []
 
-        self.distances = {}
-
-        self.target_tile = (15,4)
+        self.vectors= {}
 
 
     def draw_tilemap(self, screen):
@@ -237,8 +265,8 @@ class Map:
 
                 # THIS COULD BE OPTIMISED TO ONLY BE DONE ONCE
 
-    def calc_tile_distances(self, screen):
-        print("Target tile =", self.target_tile) # target is 15,4
+    def calc_tile_distances(self):
+        #print("Target tile =", self.target_tile) # target is 15,4
 
 
         # The first tile has a distance of one
@@ -248,18 +276,14 @@ class Map:
         self.frontier.append(self.target_tile)
 
         # While there is something left in the frontier
-        while len(self.frontier) != 0:
-            # Check it hasn't already been calculated
-
+        while (self.frontier):
             if self.check_if_field_tile(self.frontier[0]) == True:
                 self.distances[self.frontier[0]] = 99
                 self.frontier.pop(0)
+
+            # Check it hasn't already been calculated
             else:
                 if self.frontier[0] not in self.explored:
-                    
-                    
-
-
                     # Find the left, above right and below tile
                     left_tile = ((self.frontier[0][0])-1, self.frontier[0][1])
                     up_tile = (self.frontier[0][0], self.frontier[0][1]-1)
@@ -289,28 +313,47 @@ class Map:
                     # Remove it from the queue as we've already explored it
                     self.frontier.pop(0)
 
-
-                    #print("tile_type:", self.check_if_field_tile(self.frontier[0]))
-
                     #print("frontier:", self.frontier)
                     #print(self.distances)
-                    #print("Explored nodes:", self.explored)
-
-                    print("distance to", self.frontier[0],"is", self.distances[self.frontier[0]])
-
-
+                    
 
                 
                 else:
 
                     # If it has been calculated remove it from the frontier
                     self.frontier.pop(0)
-                    #print("popped first item")
-
+        
+        for key in self.distances:
+            vector = self.find_tile_vector(key)
+            self.vectors[key] = vector
+           
 
         
-        print("final explored nodes:", self.explored)
-        print("final distances", self.distances)
+
+        #print("final distances", self.distances)
+
+    def find_tile_vector(self, key):
+
+        # Define the neighbouring tiles and their directions
+        neighbours = [
+            ((key[0] - 1, key[1]), (-1, 0)),  # Left
+            ((key[0], key[1] - 1), (0, -1)),  # Up
+            ((key[0] + 1, key[1]), (1, 0)),   # Right
+            ((key[0], key[1] + 1), (0, 1)),   # Down
+        ]
+
+        closest_tile = None
+        smallest_distance = 9999  # Start with a very large distance
+
+        for tile, direction in neighbours:
+            if tile in self.distances:  # Check if the tile has a distance
+                distance = self.distances[tile]
+                if distance < smallest_distance:  # Update closest tile if smaller distance is found
+                    smallest_distance = distance # This is the new closest distance
+
+                    # Use the dictionary to return the vector for the distance
+                    closest_tile = direction 
+        return closest_tile
 
 
     def display_distances(self, screen):
@@ -327,6 +370,12 @@ class Map:
             coords = f"({key[0]}, {key[1]})" 
             display_text(coords, (text_x_pos, text_y_pos), 32, BLACK, screen)
 
+    def display_vectors(self, screen):
+        for vector in self.vectors:
+            text_x_pos = (vector[0] * TILE_SIZE) + 50
+            text_y_pos = (vector[1]* TILE_SIZE) + 50
+            display_text(str(self.vectors[vector]), (text_x_pos, text_y_pos), 32, BLACK, screen)
+
     def check_if_field_tile(self,tile):
 
         tile_y_pos = tile[0]
@@ -341,6 +390,9 @@ class Map:
             return True
         else:
             return False
+    
+    def get_vectors(self):
+        return self.vectors
 
 
 
@@ -410,9 +462,15 @@ class Bees:
 
         y_tile = self.position[1] // TILE_SIZE
 
+        return (x_tile, y_tile)
+
         #print("my position is", self.position[0], self.position[1])
         #print("I am on x tile", x_tile)
         #print("I am on y tile", y_tile)
+
+    def change_position(self, dx, dy):
+        self.position = (self.position[0] + dx, self.position[1] + dy)
+
 
 # Initialises and starts the starting screen
 NewGame = GameStartScreen()
