@@ -120,7 +120,7 @@ class MainGame:
         self.NewMap.draw_tilemap(self.screen)
 
         # Initialises a bee
-        self.Bee = Bees(48, BLACK, 100, 1, True, (20,250))
+        self.Bee = Bees(48, BLACK, 100, 1, True, (0,650))
 
         self.NewMap.calc_tile_distances()
         self.mapVectors = self.NewMap.get_vectors()
@@ -453,7 +453,7 @@ class Bees:
                 #print("reseting animation")
 
         # Displays the current animation frame on the screen
-        screen.blit(self.animation_list[self.animation_frame], self.position)
+        screen.blit(self.animation_list[self.animation_frame], (self.position[0] - self.size// 2, self.position[1]- self.size//2))
 
         pygame.display.update()
 
