@@ -119,8 +119,11 @@ class MainGame:
         self.NewMap = Map()
         self.NewMap.draw_tilemap(self.screen)
 
-        # Initialises a bee
-        self.Bee = Bees(48, BLACK, 100, 1, True, (0,650))
+        # Set up spawning bees
+        self.bee_array = []
+        self.last_bee_spawned = 0
+        self.bee_spawn_cooldown = 2000
+
 
         self.NewMap.calc_tile_distances()
         self.mapVectors = self.NewMap.get_vectors()
@@ -140,7 +143,7 @@ class MainGame:
 
             # Updates the tilemap and bee
             self.NewMap.draw_tilemap(self.screen)
-            self.Bee.animate_bee(self.screen)
+            
             
             #self.NewMap.display_distances(self.screen)
 
@@ -151,13 +154,28 @@ class MainGame:
             self.display_score()
             self.display_lives()
 
-            if self.Bee.exists == True:
-                bee_tile = self.Bee.what_tile_am_I_on()
-                bee_vector = self.mapVectors[bee_tile]
-                bee_vector = (bee_vector[0]*self.Bee.speed, bee_vector[1] * self.Bee.speed)
-                print(bee_vector)
+            self.current_time = pygame.time.get_ticks()
 
-                self.Bee.change_position(bee_vector[0], bee_vector[1])
+            if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
+                self.last_bee_spawned = self.current_time
+
+                NewBee = Bees(48, BLACK, 100, 1, True, (0,650))
+                self.bee_array.append(NewBee)
+
+            for entity in self.bee_array:
+                if entity.position[0] >= 1440:
+                    entity.exists = False
+
+                if entity.exists == True:
+                    bee_tile = entity.what_tile_am_I_on()
+                    bee_vector = self.mapVectors[bee_tile]
+                    bee_vector = (bee_vector[0]*entity.speed, bee_vector[1] * entity.speed)
+
+                    entity.change_position(bee_vector[0], bee_vector[1])
+
+                    entity.animate_bee(self.screen)
+
+ 
 
             # Display the game at 120 fps
             self.clock.tick(120)
@@ -478,3 +496,4 @@ NewGame.run()
 
     
 pygame.quit()
+
