@@ -103,7 +103,6 @@ class GameStartScreen:
 
 class MainGame:
     def __init__(self, screen):
-
         # Sets up the screen
         self.screen = screen
         self.screen_width = 1440
@@ -114,6 +113,7 @@ class MainGame:
         
 
         self.clock = pygame.time.Clock()
+        self.game_start_time = pygame.time.get_ticks()
 
         # Initialises and draws the tilemap
         self.NewMap = Map()
@@ -122,7 +122,7 @@ class MainGame:
         # Set up spawning bees
         self.bee_array = []
         self.last_bee_spawned = 0
-        self.bee_spawn_cooldown = 100
+        self.bee_spawn_cooldown = 2000
 
 
         self.NewMap.calc_tile_distances()
@@ -156,6 +156,11 @@ class MainGame:
 
             self.current_time = pygame.time.get_ticks()
 
+            self.bee_spawn_cooldown -= self.current_time/80000
+
+            if self.bee_spawn_cooldown <= 500:
+                self.bee_spawn_cooldown = 500
+
             if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
                 self.last_bee_spawned = self.current_time
 
@@ -183,10 +188,6 @@ class MainGame:
                 entity.change_position(bee_vector[0], bee_vector[1])
 
                 entity.animate_bee(self.screen)
-
-
-
- 
 
             # Display the game at 120 fps
             self.clock.tick(120)
