@@ -122,7 +122,7 @@ class MainGame:
         # Set up spawning bees
         self.bee_array = []
         self.last_bee_spawned = 0
-        self.bee_spawn_cooldown = 2000
+        self.bee_spawn_cooldown = 100
 
 
         self.NewMap.calc_tile_distances()
@@ -159,21 +159,32 @@ class MainGame:
             if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
                 self.last_bee_spawned = self.current_time
 
-                NewBee = Bees(48, BLACK, 100, 1, True, (0,650))
-                self.bee_array.append(NewBee)
+                TopBee = Bees(48, BLACK, 100, 1, True, (0,350))
+                BottomBee = Bees(48, BLACK, 100, 1, True, (0,650))
+                self.bee_array.append(TopBee)
+                self.bee_array.append(BottomBee)
+
 
             for entity in self.bee_array:
                 if entity.position[0] >= 1440:
                     entity.exists = False
+                    self.lives -= 1
 
-                if entity.exists == True:
-                    bee_tile = entity.what_tile_am_I_on()
-                    bee_vector = self.mapVectors[bee_tile]
-                    bee_vector = (bee_vector[0]*entity.speed, bee_vector[1] * entity.speed)
+                self.current_time = pygame.time.get_ticks()
 
-                    entity.change_position(bee_vector[0], bee_vector[1])
+                if not entity.exists:
+                    self.bee_array.remove(entity)
 
-                    entity.animate_bee(self.screen)
+
+                bee_tile = entity.what_tile_am_I_on()
+                bee_vector = self.mapVectors[bee_tile]
+                bee_vector = (bee_vector[0]*entity.speed, bee_vector[1] * entity.speed)
+
+                entity.change_position(bee_vector[0], bee_vector[1])
+
+                entity.animate_bee(self.screen)
+
+
 
  
 
@@ -424,6 +435,7 @@ class Bees:
         self.speed = speed
         self.exists = exists
         self.position = position
+        
 
         # Set up everything needed for the animation
         self.animation_frame = 0
@@ -439,6 +451,9 @@ class Bees:
             # Get the inividual frames for the bee and append them to an array
             self.animation_list.append(self.get_image(x, self.size, self.size))
             #print("frame", x, "appended to list")
+
+        # Set up properties for bee pathfinding frequency
+        self.last_movement_update = 0
 
 
     def get_image(self, level, width, height):
@@ -473,7 +488,7 @@ class Bees:
         # Displays the current animation frame on the screen
         screen.blit(self.animation_list[self.animation_frame], (self.position[0] - self.size// 2, self.position[1]- self.size//2))
 
-        pygame.display.update()
+
 
     def what_tile_am_I_on(self):
         x_tile = self.position[0] // TILE_SIZE
