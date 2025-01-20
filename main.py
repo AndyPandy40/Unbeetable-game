@@ -11,8 +11,8 @@ RED = (255, 0, 0)
 LIGHT_RED = (200, 0, 0)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-YELLOW = (225,225,0)
-
+YELLOW = (225, 225, 0)
+GRAY = (146, 142, 135)
 
 # Function to make displaying text easier
 def display_text(text, position, size, color, screen):
@@ -40,7 +40,7 @@ class GameStartScreen:
         self.title_text = pygame.image.load("images/Unbeetable_game_text.png")
 
         # Sets up the screen
-        self.screen = pygame.display.set_mode((self.screen_width, 960))
+        self.screen = pygame.display.set_mode((1824, 960))
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.run_start_screen = True
         self.run_game = False
@@ -105,8 +105,11 @@ class MainGame:
     def __init__(self, screen):
         # Sets up the screen
         self.screen = screen
-        self.screen_width = 1440
+        self.screen_width = 1824
         self.screen_height = 960
+        self.game_width = 1440
+        self.game_height = self.screen_height
+
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.heart_image =  pygame.image.load("images/heart.png")
         self.heart_image = pygame.transform.scale(self.heart_image, (27, 27))
@@ -118,6 +121,13 @@ class MainGame:
         # Initialises and draws the tilemap
         self.NewMap = Map()
         self.NewMap.draw_tilemap(self.screen)
+
+        # Creates the shop
+        pygame.draw.rect(self.screen, GRAY, (self.game_width, 0, TILE_SIZE*4, self.game_height))
+        pygame.draw.line(self.screen, BLACK, (self.game_width+4, 0), (self.game_width+4, self.screen_height), 10)
+        display_text("SHOP", (self.game_width + TILE_SIZE*2, TILE_SIZE/2), 50, BLACK, self.screen)
+        pygame.draw.line(self.screen, BLACK, (self.game_width+4, TILE_SIZE), (self.screen_width, TILE_SIZE), 10)
+
 
         # Set up spawning bees
         self.bee_array = []
@@ -171,7 +181,7 @@ class MainGame:
 
 
             for entity in self.bee_array:
-                if entity.position[0] >= 1440:
+                if entity.position[0] >= self.game_width-5:
                     entity.exists = False
                     self.lives -= 1
 
@@ -188,6 +198,11 @@ class MainGame:
                 entity.change_position(bee_vector[0], bee_vector[1])
 
                 entity.animate_bee(self.screen)
+
+                # Blits the line again to draw over dead bees
+                pygame.draw.line(self.screen, BLACK, (self.game_width+4, 0), (self.game_width+4, self.screen_height), 10)
+
+                
 
             # Display the game at 120 fps
             self.clock.tick(120)
@@ -291,7 +306,8 @@ class Map:
                 tile_image = self.tile_images[tile_type] 
 
                 # Displays them in order using their position in the array and size
-                screen.blit(tile_image, (col * TILE_SIZE, row * TILE_SIZE)) 
+                if col != 15:
+                    screen.blit(tile_image, (col * TILE_SIZE, row * TILE_SIZE)) 
 
                 # THIS COULD BE OPTIMISED TO ONLY BE DONE ONCE
 
