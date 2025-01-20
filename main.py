@@ -251,7 +251,7 @@ class Button:
             button_color = self.inactive_color
 
         # Draw a rectangle for the button
-        pygame.draw.rect(screen, button_color, (self.position[0], self.position[1], self.width, self.height))
+        pygame.draw.rect(screen, button_color, (self.position[0], self.position[1], self.width, self.height), 0, 15)
         
         # Display text on button
         display_text(self.text, self.button_center, 60, BLACK, screen)
@@ -439,7 +439,6 @@ class Map:
     
     def get_vectors(self):
         return self.vectors
-
 
 
 
