@@ -55,8 +55,8 @@ class GameStartScreen:
 
 
         # Displays buttons at start of code
-        self.start_button = Button(GREEN, LIGHT_GREEN, "Start", (216, 550), 450, 100, self.display_game)
-        self.quit_button = Button(RED, LIGHT_RED, "Quit", (774, 550), 450, 100, self.quit)
+        self.start_button = Button(self.screen, GREEN, LIGHT_GREEN, "Start", (216, 550), 450, 100, 60, self.display_game)
+        self.quit_button = Button(self.screen, RED, LIGHT_RED, "Quit", (774, 550), 450, 100, 60, self.quit)
 
 
 
@@ -127,6 +127,10 @@ class MainGame:
         pygame.draw.line(self.screen, BLACK, (self.game_width+4, 0), (self.game_width+4, self.screen_height), 10)
         display_text("SHOP", (self.game_width + TILE_SIZE*2, TILE_SIZE/2), 50, BLACK, self.screen)
         pygame.draw.line(self.screen, BLACK, (self.game_width+4, TILE_SIZE), (self.screen_width, TILE_SIZE), 10)
+
+        # Create button for tower
+        self.TowerButton = Button(self.screen, GREEN, LIGHT_GREEN, "100", (self.game_width+35, TILE_SIZE+30), 320, 75, 30, self.buy_tower)
+        self.TowerButton.draw_button(self.screen)
 
 
         # Set up spawning bees
@@ -202,15 +206,16 @@ class MainGame:
                 # Blits the line again to draw over dead bees
                 pygame.draw.line(self.screen, BLACK, (self.game_width+4, 0), (self.game_width+4, self.screen_height), 10)
 
+                # Redraw shop button
+                self.TowerButton.draw_button(self.screen)
+
                 
 
             # Display the game at 120 fps
             self.clock.tick(120)
             pygame.display.update()
 
-    def quit(self):
-        pygame.quit()
-        exit()
+
 
     def display_score(self):
         score_string = ("Score: " + str(self.score))
@@ -221,19 +226,31 @@ class MainGame:
         display_text(lives_string, (1330,42), 25, RED, self.screen)
         self.screen.blit(self.heart_image, (1280, 25))
 
+    def buy_tower(self):
+        pass
+
+
+    def quit(self):
+        pygame.quit()
+        exit()
+
 
 class Button:
-    def __init__(self, inactive_color, active_color, text, position, width, height, action=None):
+    def __init__(self, screen, inactive_color, active_color, text, position, width, height, text_size, action=None):
+        self.screen = screen
         self.inactive_color = inactive_color
         self.active_color = active_color
         self.text = text
         self.position = position
         self.width = width
         self.height = height
+        self.text_size = text_size
         self.action = action
 
         # Calculate the centre of the button
         self.button_center = ((self.position[0] + (self.width//2)), self.position[1] + (self.height//2))
+
+        pygame.draw.rect(screen, self.inactive_color, (self.position[0], self.position[1], self.width, self.height), 0, 15)
 
     def draw_button(self, screen):
         # Get the position of the mouse and see if the user is clicking
@@ -254,7 +271,7 @@ class Button:
         pygame.draw.rect(screen, button_color, (self.position[0], self.position[1], self.width, self.height), 0, 15)
         
         # Display text on button
-        display_text(self.text, self.button_center, 60, BLACK, screen)
+        display_text(self.text, self.button_center, self.text_size, BLACK, screen)
 
 class Map:
     def __init__(self):
