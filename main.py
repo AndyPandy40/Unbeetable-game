@@ -153,7 +153,7 @@ class MainGame:
                 if event.type == pygame.QUIT:
                     self.quit()
 
-            #print(self.clock.get_fps())
+            print(self.clock.get_fps())
 
             # Updates the tilemap and bee
             self.NewMap.draw_tilemap(self.screen)
@@ -251,6 +251,10 @@ class Button:
         self.button_center = ((self.position[0] + (self.width//2)), self.position[1] + (self.height//2))
 
         pygame.draw.rect(screen, self.inactive_color, (self.position[0], self.position[1], self.width, self.height), 0, 15)
+        display_text(self.text, self.button_center, self.text_size, BLACK, screen)
+
+        self.last_update = False
+        self.current_update = False
 
     def draw_button(self, screen):
         # Get the position of the mouse and see if the user is clicking
@@ -260,18 +264,24 @@ class Button:
 
         # Check if user is hovering over button
         if self.position[0] < mouse[0] < self.position[0] + self.width and self.position[1] < mouse[1] < self.position[1] + self.height:
+            self.current_update = True
             button_color = self.active_color
             if click[0]:
                 # Preform the button's action if the user clicks
                 self.action()
         else:
             button_color = self.inactive_color
+            self.current_update = False
 
-        # Draw a rectangle for the button
-        pygame.draw.rect(screen, button_color, (self.position[0], self.position[1], self.width, self.height), 0, 15)
-        
-        # Display text on button
-        display_text(self.text, self.button_center, self.text_size, BLACK, screen)
+
+        if self.current_update != self.last_update:
+            # Draw a rectangle for the button
+            pygame.draw.rect(screen, button_color, (self.position[0], self.position[1], self.width, self.height), 0, 15)
+            
+            # Display text on button
+            display_text(self.text, self.button_center, self.text_size, BLACK, screen)
+
+        self.last_update = self.current_update
 
 class Map:
     def __init__(self):
