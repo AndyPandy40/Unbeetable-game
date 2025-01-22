@@ -129,7 +129,7 @@ class MainGame:
         pygame.draw.line(self.screen, BLACK, (self.game_width+4, TILE_SIZE), (self.screen_width, TILE_SIZE), 10)
 
         # Create button for tower
-        self.TowerButton = Button(self.screen, GREEN, LIGHT_GREEN, "100", (self.game_width+35, TILE_SIZE+30), 320, 75, 30, self.buy_tower)
+        self.TowerButton = Button(self.screen, (10, 178, 21), LIGHT_GREEN, "100", (self.game_width+35, TILE_SIZE+30), 320, 75, 30, self.buy_tower)
         self.TowerButton.draw_button(self.screen)
 
 
@@ -153,7 +153,7 @@ class MainGame:
                 if event.type == pygame.QUIT:
                     self.quit()
 
-            print(self.clock.get_fps())
+            #print(self.clock.get_fps())
 
             # Updates the tilemap and bee
             self.NewMap.draw_tilemap(self.screen)
