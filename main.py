@@ -132,6 +132,17 @@ class MainGame:
         self.TowerButton = Button(self.screen, (10, 178, 21), LIGHT_GREEN, "100", (self.game_width+35, TILE_SIZE+30), 320, 75, 30, self.buy_tower)
         self.TowerButton.draw_button(self.screen)
 
+        self.tower_width = TILE_SIZE//3
+        self.tower_height = TILE_SIZE
+
+        self.tower_image = pygame.image.load("images/towers/towerBase.png")
+        self.tower_image = pygame.transform.scale(self.tower_image, (TILE_SIZE, TILE_SIZE))
+        self.screen.blit(self.tower_image, (self.game_width + TILE_SIZE, TILE_SIZE), (0, 0, self.tower_width, self.tower_height))
+
+        # Create a random tower
+        self.Tower = Towers(TILE_SIZE, TILE_SIZE)
+        
+
 
         # Set up spawning bees
         self.bee_array = []
@@ -208,6 +219,8 @@ class MainGame:
 
                 # Redraw shop button
                 self.TowerButton.draw_button(self.screen)
+
+                self.Tower.draw_tower(self.screen)
 
                 
 
@@ -547,6 +560,21 @@ class Bees:
     def change_position(self, dx, dy):
         self.position = (self.position[0] + dx, self.position[1] + dy)
 
+
+
+
+class Towers:
+    def __init__(self, position):
+        self.sprite_sheet = pygame.image.load("images/towers/towerBase.png")
+        self.sprite_sheet = pygame.transform.scale(self.sprite_sheet, (TILE_SIZE, TILE_SIZE))
+        self.position = position
+        self.tower_height = TILE_SIZE
+        self.tower_width = TILE_SIZE
+
+        self.level = 1
+
+    def draw_tower(self, screen):
+        screen.blit(self.tower_image, (self.position), (0, 0, (self.level-1)*self.tower_width, self.tower_height))
 
 # Initialises and starts the starting screen
 NewGame = GameStartScreen()
