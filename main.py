@@ -132,12 +132,19 @@ class MainGame:
         self.TowerButton = Button(self.screen, (10, 178, 21), LIGHT_GREEN, "100", (self.game_width+35, TILE_SIZE+30), 320, 75, 30, self.buy_tower)
         self.TowerButton.draw_button(self.screen)
 
-        self.tower_width = TILE_SIZE//3
-        self.tower_height = TILE_SIZE
 
-        self.tower_image = pygame.image.load("images/towers/towerBase.png")
-        self.tower_image = pygame.transform.scale(self.tower_image, (TILE_SIZE, TILE_SIZE))
-        self.screen.blit(self.tower_image, (self.game_width + TILE_SIZE, TILE_SIZE), (0, 0, self.tower_width, self.tower_height))
+        # Display tower image on button
+        self.shop_tower_height = TILE_SIZE*0.75
+        self.shop_tower_width = self.shop_tower_height//3
+
+        self.shop_tower_image = pygame.image.load("images/towers/towerBase.png")
+        self.shop_tower_image = pygame.transform.scale(self.shop_tower_image, (self.shop_tower_height+45, self.shop_tower_height))
+        self.screen.blit(self.shop_tower_image, (self.game_width + 65, TILE_SIZE+25), (0, 0, self.shop_tower_width+15, self.shop_tower_height))
+
+        # Display coin image on button
+        self.shop_coin_image = pygame.image.load("images/coin.png")
+        self.shop_coin_image = pygame.transform.scale_by(self.shop_coin_image, 0.7)
+ 
 
         # Create a random tower
         self.Tower = Towers((TILE_SIZE*2, TILE_SIZE*3))
@@ -155,6 +162,7 @@ class MainGame:
 
 
         self.score = 0
+        self.money = 500
         self.lives = 5
         
 
@@ -177,6 +185,7 @@ class MainGame:
             #self.NewMap.display_vectors(self.screen)
 
             self.display_score()
+            self.display_money()
             self.display_lives()
 
             self.current_time = pygame.time.get_ticks()
@@ -232,11 +241,17 @@ class MainGame:
 
     def display_score(self):
         score_string = ("Score: " + str(self.score))
-        display_text(score_string, (1130,40), 25, YELLOW, self.screen)
+        display_text(score_string, (80, 40), 25, YELLOW, self.screen)
+
+
+    def display_money(self):
+        money_string = (self.money)
+        display_text(money_string, (1130, 42), 25, YELLOW, self.screen)
+        self.screen.blit(self.shop_coin_image, (1068,23))
 
     def display_lives(self):
         lives_string = (str(self.lives)+"/5")
-        display_text(lives_string, (1330,42), 25, RED, self.screen)
+        display_text(lives_string, (1330, 42), 25, RED, self.screen)
         self.screen.blit(self.heart_image, (1280, 25))
 
     def buy_tower(self):
