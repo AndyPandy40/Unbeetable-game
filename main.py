@@ -140,7 +140,7 @@ class MainGame:
         self.screen.blit(self.tower_image, (self.game_width + TILE_SIZE, TILE_SIZE), (0, 0, self.tower_width, self.tower_height))
 
         # Create a random tower
-        self.Tower = Towers((TILE_SIZE, TILE_SIZE))
+        self.Tower = Towers((TILE_SIZE*2, TILE_SIZE*3))
         
 
 
@@ -567,14 +567,20 @@ class Towers:
     def __init__(self, position):
         self.sprite_sheet = pygame.image.load("images/towers/towerBase.png")
         self.sprite_sheet = pygame.transform.scale(self.sprite_sheet, (TILE_SIZE*1.5, TILE_SIZE))
-        self.position = position
-        self.tower_height = TILE_SIZE 
-        self.tower_width = TILE_SIZE * 3
 
-        self.level = 1
+        self.position = position
+
+        self.tower_height = TILE_SIZE 
+        self.tower_width = TILE_SIZE /2
+
+        self.level = 3
 
     def draw_tower(self, screen):
-        screen.blit(self.sprite_sheet, (self.position[0] + TILE_SIZE//4, self.position[1]-TILE_SIZE//3), ((self.level-1)*self.tower_width, 0, self.tower_width//6 , self.tower_height))
+        
+        x_pos = self.position[0] + TILE_SIZE//4
+        y_pos = self.position[1]- TILE_SIZE//3
+
+        screen.blit(self.sprite_sheet, (x_pos, y_pos), ((self.level-1)*(self.tower_width), 0, self.tower_width , self.tower_height))
 
 # Initialises and starts the starting screen
 NewGame = GameStartScreen()
