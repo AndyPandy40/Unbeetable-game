@@ -169,6 +169,8 @@ class MainGame:
         self.score = 0
         self.money = 500
         self.lives = 5
+
+        self.placing_tower = False
         
 
     def run_game(self):
@@ -270,8 +272,15 @@ class MainGame:
 
 
     def buy_tower(self):
-        pass
+        if self.placing_tower == False:
+            if self.money >= 100:
+                self.money -= 100
+                self.placing_tower = True
+                
+                self.get_tower()
 
+    def get_tower(self):
+        pass
 
     def quit(self):
         pygame.quit()
