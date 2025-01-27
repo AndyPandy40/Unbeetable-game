@@ -137,8 +137,8 @@ class MainGame:
         self.shop_tower_height = TILE_SIZE*0.75
         self.shop_tower_width = self.shop_tower_height//3
 
-        self.shop_tower_image = pygame.image.load("images/towers/towerBase.png")
-        self.shop_tower_image = pygame.transform.scale(self.shop_tower_image, (self.shop_tower_height+45, self.shop_tower_height))
+        self.tower_image = pygame.image.load("images/towers/towerBase.png")
+        self.shop_tower_image = pygame.transform.scale(self.tower_image, (self.shop_tower_height+45, self.shop_tower_height))
 
         self.screen.blit(self.shop_tower_image, (self.game_width + 70, TILE_SIZE + 25), (0, 0, self.shop_tower_width + 15, self.shop_tower_height))
         
@@ -149,12 +149,10 @@ class MainGame:
 
         self.screen.blit(self.shop_coin_image, (self.game_width + 136, 148))
         
- 
 
         # Create a random tower
         self.Tower = Towers((TILE_SIZE*2, TILE_SIZE*3))
         
-
 
         # Set up spawning bees
         self.bee_array = []
@@ -224,7 +222,7 @@ class MainGame:
 
                 bee_tile = entity.what_tile_am_I_on()
                 bee_vector = self.mapVectors[bee_tile]
-                bee_vector = (bee_vector[0]*entity.speed, bee_vector[1] * entity.speed)
+                bee_vector = (bee_vector[0]*entity.speed,bee_vector[1] * entity.speed)
 
                 entity.change_position(bee_vector[0], bee_vector[1])
 
@@ -237,9 +235,12 @@ class MainGame:
                 self.TowerButton.draw_button(self.screen)
                 self.display_shop_button_images()
 
+                if self.placing_tower == True:
+                    self.place_tower()
+
             self.Tower.draw_tower(self.screen)
 
-                
+            self.mouse_pos = pygame.mouse.get_pos()
 
             # Display the game at 120 fps
             self.clock.tick(120)
@@ -257,10 +258,12 @@ class MainGame:
         display_text(money_string, (1140, 42), 25, YELLOW, self.screen)
         self.screen.blit(self.shop_coin_image, (1085, 26))
 
+
     def display_lives(self):
         lives_string = (str(self.lives)+"/5")
         display_text(lives_string, (1330, 42), 25, RED, self.screen)
         self.screen.blit(self.heart_image, (1280, 25))
+
 
     def display_shop_button_images(self):
         # Display tower
@@ -277,10 +280,22 @@ class MainGame:
                 self.money -= 100
                 self.placing_tower = True
                 
-                self.get_tower()
+                self.place_tower()
 
-    def get_tower(self):
-        pass
+    def place_tower(self):
+        ghost_tower_image = self.tower_image
+        ghost_tower_image.set_alpha(20)
+
+        ghost_tower_pos = []
+
+        print(self.mouse_pos)
+
+        x_pos = (self.mouse_pos[0] // TILE_SIZE) * TILE_SIZE
+        y_pos = (self.mouse_pos[1] // TILE_SIZE)* TILE_SIZE
+
+        self.screen.blit(ghost_tower_image, [x_pos, y_pos])
+        
+        
 
     def quit(self):
         pygame.quit()
@@ -478,6 +493,7 @@ class Map:
 
                     # Use the dictionary to return the vector for the distance
                     closest_tile = direction 
+
         return closest_tile
 
 
@@ -612,7 +628,7 @@ class Towers:
         self.tower_height = TILE_SIZE 
         self.tower_width = TILE_SIZE /2
 
-        self.level = 1
+        self.level = 3
 
     def draw_tower(self, screen):
         
