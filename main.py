@@ -275,6 +275,7 @@ class MainGame:
 
 
     def buy_tower(self):
+        #Check if player has enough money
         if self.placing_tower == False:
             if self.money >= 100:
                 self.money -= 100
@@ -284,16 +285,18 @@ class MainGame:
 
     def place_tower(self):
         ghost_tower_image = self.tower_image
+        ghost_tower_image = pygame.transform.scale(ghost_tower_image, (TILE_SIZE*1.5, TILE_SIZE))
         ghost_tower_image.set_alpha(20)
 
-        ghost_tower_pos = []
+        ghost_tower_height = TILE_SIZE
+        ghost_tower_width = TILE_SIZE / 2
 
-        print(self.mouse_pos)
 
-        x_pos = (self.mouse_pos[0] // TILE_SIZE) * TILE_SIZE
-        y_pos = (self.mouse_pos[1] // TILE_SIZE)* TILE_SIZE
+        ghost_tower_x_pos = ((self.mouse_pos[0] // TILE_SIZE) * TILE_SIZE) + TILE_SIZE//4
+        ghost_tower_y_pos = ((self.mouse_pos[1] // TILE_SIZE) * TILE_SIZE) - TILE_SIZE//3
 
-        self.screen.blit(ghost_tower_image, [x_pos, y_pos])
+        if not ghost_tower_x_pos >= self.game_width:
+            self.screen.blit(ghost_tower_image, [ghost_tower_x_pos, ghost_tower_y_pos], (0, 0, ghost_tower_width , ghost_tower_height))
         
         
 
@@ -626,16 +629,16 @@ class Towers:
         self.position = position
 
         self.tower_height = TILE_SIZE 
-        self.tower_width = TILE_SIZE /2
+        self.tower_width = TILE_SIZE / 2
 
         self.level = 3
 
     def draw_tower(self, screen):
         
-        x_pos = self.position[0] + TILE_SIZE//4
-        y_pos = self.position[1]- TILE_SIZE//3
+        tower_x_pos = self.position[0] + TILE_SIZE//4
+        tower_y_pos = self.position[1] - TILE_SIZE//3
 
-        screen.blit(self.sprite_sheet, (x_pos, y_pos), ((self.level-1)*(self.tower_width), 0, self.tower_width , self.tower_height))
+        screen.blit(self.sprite_sheet, (tower_x_pos, tower_y_pos), ((self.level-1)*(self.tower_width), 0, self.tower_width , self.tower_height))
 
 # Initialises and starts the starting screen
 NewGame = GameStartScreen()
