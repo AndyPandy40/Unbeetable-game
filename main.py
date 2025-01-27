@@ -72,8 +72,6 @@ class GameStartScreen:
             #print(self.clock.get_fps())
 
 
-
-
     def display_menu(self):
         #print("displaying menu")
         # Update start button
@@ -284,8 +282,7 @@ class MainGame:
                 self.place_tower()
 
     def place_tower(self):
-        ghost_tower_image = self.tower_image
-        ghost_tower_image = pygame.transform.scale(ghost_tower_image, (TILE_SIZE*1.5, TILE_SIZE))
+        ghost_tower_image = pygame.transform.scale(self.tower_image, (TILE_SIZE*1.5, TILE_SIZE))
         ghost_tower_image.set_alpha(20)
 
         ghost_tower_height = TILE_SIZE
@@ -352,6 +349,7 @@ class Button:
             display_text(self.text, self.button_center, self.text_size, BLACK, screen)
 
         self.last_update = self.current_update
+
 
 class Map:
     def __init__(self):
