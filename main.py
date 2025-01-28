@@ -148,8 +148,6 @@ class MainGame:
         self.screen.blit(self.shop_coin_image, (self.game_width + 136, 148))
         
 
-        # Create a random tower
-        self.Tower = Towers((TILE_SIZE*2, TILE_SIZE*3))
         
 
         # Set up spawning bees
@@ -163,10 +161,16 @@ class MainGame:
 
 
         self.score = 0
-        self.money = 500
+        self.money = 10000
         self.lives = 5
 
         self.placing_tower = False
+
+        self.tower_array = []
+
+        self.ghost_tower_x_pos = 0
+        self.ghost_tower_y_pos = 0
+        
         
 
     def run_game(self):
@@ -174,6 +178,10 @@ class MainGame:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.quit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN and self.placing_tower == True:
+                    self.place_tower()
+                
 
             #print(self.clock.get_fps())
 
@@ -234,11 +242,15 @@ class MainGame:
                 self.display_shop_button_images()
 
                 if self.placing_tower == True:
-                    self.place_tower()
+                    self.display_ghost_tower()
 
-            self.Tower.draw_tower(self.screen)
+                # Draw all of the towers
+                for tower in  self.tower_array:
+                    tower.draw_tower(self.screen)
+
 
             self.mouse_pos = pygame.mouse.get_pos()
+            self.clicked = pygame.mouse.get_pressed()
 
             # Display the game at 120 fps
             self.clock.tick(120)
@@ -279,9 +291,9 @@ class MainGame:
                 self.money -= 100
                 self.placing_tower = True
                 
-                self.place_tower()
+                self.display_ghost_tower()
 
-    def place_tower(self):
+    def display_ghost_tower(self):
         ghost_tower_image = pygame.transform.scale(self.tower_image, (TILE_SIZE*1.5, TILE_SIZE))
         ghost_tower_image.set_alpha(20)
 
@@ -289,11 +301,22 @@ class MainGame:
         ghost_tower_width = TILE_SIZE / 2
 
 
-        ghost_tower_x_pos = ((self.mouse_pos[0] // TILE_SIZE) * TILE_SIZE) + TILE_SIZE//4
-        ghost_tower_y_pos = ((self.mouse_pos[1] // TILE_SIZE) * TILE_SIZE) - TILE_SIZE//3
+        self.ghost_tower_x_pos = ((self.mouse_pos[0] // TILE_SIZE) * TILE_SIZE) + TILE_SIZE//4
+        self.ghost_tower_y_pos = ((self.mouse_pos[1] // TILE_SIZE) * TILE_SIZE) - TILE_SIZE//3
 
-        if not ghost_tower_x_pos >= self.game_width:
-            self.screen.blit(ghost_tower_image, [ghost_tower_x_pos, ghost_tower_y_pos], (0, 0, ghost_tower_width , ghost_tower_height))
+        if not self.ghost_tower_x_pos >= self.game_width:
+            self.screen.blit(ghost_tower_image, [self.ghost_tower_x_pos, self.ghost_tower_y_pos], (0, 0, ghost_tower_width , ghost_tower_height))
+
+        return
+
+
+    def place_tower(self):
+        if self.ghost_tower_x_pos <= self.game_width:
+            NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos))
+            self.tower_array.append(NewTower)
+
+
+            self.placing_tower = False
         
         
 
@@ -629,12 +652,12 @@ class Towers:
         self.tower_height = TILE_SIZE 
         self.tower_width = TILE_SIZE / 2
 
-        self.level = 3
+        self.level = 1
 
     def draw_tower(self, screen):
         
-        tower_x_pos = self.position[0] + TILE_SIZE//4
-        tower_y_pos = self.position[1] - TILE_SIZE//3
+        tower_x_pos = self.position[0]
+        tower_y_pos = self.position[1]
 
         screen.blit(self.sprite_sheet, (tower_x_pos, tower_y_pos), ((self.level-1)*(self.tower_width), 0, self.tower_width , self.tower_height))
 
