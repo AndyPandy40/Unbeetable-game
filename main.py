@@ -385,6 +385,12 @@ class Map:
         self.path_img = pygame.image.load("images/tiles/path.png").convert()
         self.path_img = pygame.transform.scale(self.path_img, (TILE_SIZE, TILE_SIZE))
 
+        # A dictionary to map the numbers (1 and 0) to their images
+        self.tile_images = {
+            0: self.grass_img,
+            1: self.path_img,
+        }
+
         self.tilemap = [
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
             [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0], 
@@ -398,11 +404,22 @@ class Map:
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ]
 
-        # A dictionary to map the numbers (1 and 0) to their images
-        self.tile_images = {
-            0: self.grass_img,
-            1: self.path_img,
-        }
+        self.background_surface = pygame.Surface((1440, 960))
+
+        for row in range(len(self.tilemap)):
+            for col in range(len(self.tilemap[row])):
+                # Finds the tile type at a position (1 or 0)
+                tile_type = self.tilemap[row][col] 
+
+                # Matches it with the image using the dictionary
+                tile_image = self.tile_images[tile_type] 
+
+                # Displays them in order using their position in the array and size
+                if col != 15:
+                    self.background_surface.blit(tile_image, (col * TILE_SIZE, row * TILE_SIZE)) 
+
+
+
 
         # Set up everything for pathfinding
         self.frontier = []
@@ -414,20 +431,8 @@ class Map:
 
 
     def draw_tilemap(self, screen):
-        # Iterates through each element in the 2d array
-        for row in range(len(self.tilemap)):
-            for col in range(len(self.tilemap[row])):
-                # Finds the tile type at a position (1 or 0)
-                tile_type = self.tilemap[row][col] 
-
-                # Matches it with the image using the dictionary
-                tile_image = self.tile_images[tile_type] 
-
-                # Displays them in order using their position in the array and size
-                if col != 15:
-                    screen.blit(tile_image, (col * TILE_SIZE, row * TILE_SIZE)) 
-
-                # THIS COULD BE OPTIMISED TO ONLY BE DONE ONCE
+        
+        screen.blit(self.background_surface, (0, 0))
 
     def calc_tile_distances(self):
         #print("Target tile =", self.target_tile) # target is 15,4
@@ -667,4 +672,3 @@ NewGame.run()
 
     
 pygame.quit()
-
