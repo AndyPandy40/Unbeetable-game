@@ -171,7 +171,6 @@ class MainGame:
         self.ghost_tower_x_pos = 0
         self.ghost_tower_y_pos = 0
         
-        
 
     def run_game(self):
         while self.run_game:
@@ -312,12 +311,11 @@ class MainGame:
 
     def place_tower(self):
         if self.ghost_tower_x_pos <= self.game_width:
-            NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos))
+            NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK)
             self.tower_array.append(NewTower)
 
 
             self.placing_tower = False
-        
         
 
     def quit(self):
@@ -485,8 +483,6 @@ class Map:
                     #print("frontier:", self.frontier)
                     #print(self.distances)
                     
-
-                
                 else:
 
                     # If it has been calculated remove it from the frontier
@@ -646,18 +642,41 @@ class Bees:
 
 
 
-
 class Towers:
-    def __init__(self, position):
+    def __init__(self, position, color):
         self.sprite_sheet = pygame.image.load("images/towers/towerBase.png")
         self.sprite_sheet = pygame.transform.scale(self.sprite_sheet, (TILE_SIZE*1.5, TILE_SIZE))
 
+        self.weapon_sprite_sheet = pygame.image.load("images/towers/towerWeapon.png")
+        self.weapon_sprite_sheet = pygame.transform.scale_by(self.weapon_sprite_sheet, 1)
+
         self.position = position
+
+        self.color = color
 
         self.tower_height = TILE_SIZE 
         self.tower_width = TILE_SIZE / 2
 
         self.level = 1
+
+        self.tower_animation_frame = 0
+        self.tower_animation_list = []
+        self.tower_animation_steps = 10
+        self.tower_animation_cooldown = 100
+
+        self.weapon_size = 48
+
+        self.last_update = pygame.time.get_ticks()
+        self.current_time = pygame.time.get_ticks()
+
+        # Loop through the sprite sheet
+        for x in range(self.tower_animation_steps):
+            # Get the inividual frames for the bee and append them to an array
+            self.tower_animation_list.append(self.get_weapon_image(x, self.weapon_size, self.weapon_size))
+            #print("frame", x, "appended to list")
+            
+        self.weapon_position = (self.position[0], self.position[1] + 30)
+        
 
     def draw_tower(self, screen):
         
@@ -666,9 +685,43 @@ class Towers:
 
         screen.blit(self.sprite_sheet, (tower_x_pos, tower_y_pos), ((self.level-1)*(self.tower_width), 0, self.tower_width , self.tower_height))
 
+        self.animate_weapon(screen)
+
+    def get_weapon_image(self, frame, width, height):
+
+        image = pygame.Surface((width, height))
+
+        # Blit the frame of the bee onto the surface
+        image.blit(self.weapon_sprite_sheet, (0,0), ((frame*width, 0, width, height)))
+
+        image.set_colorkey(self.color)
+
+        return image
+    
+    def animate_weapon(self, screen):
+
+        self.current_time = pygame.time.get_ticks()
+
+        # Check if it's time to update the frame
+        if self.current_time - self.last_update >= self.tower_animation_cooldown:
+            self.last_update = self.current_time
+
+            # Go to the next frame in the animation
+            self.tower_animation_frame += 1
+
+            if self.tower_animation_frame >= self.tower_animation_steps:
+                # Loop back to the first frame if it goes over the animation steps
+                self.tower_animation_frame = 0
+                #print("reseting animation")
+
+        # Displays the current animation frame on the screen
+        screen.blit(self.tower_animation_list[self.tower_animation_frame], (self.position[0] - self.weapon_size// 2, self.weapon_position[1]- self.weapon_size//2))
+
+
+
+
 # Initialises and starts the starting screen
 NewGame = GameStartScreen()
 NewGame.run()
-
     
 pygame.quit()
