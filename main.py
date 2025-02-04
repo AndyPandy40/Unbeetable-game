@@ -182,7 +182,7 @@ class MainGame:
                     self.place_tower()
                 
 
-            #print(self.clock.get_fps())
+            print(self.clock.get_fps())
 
             # Updates the tilemap and bee
             self.NewMap.draw_tilemap(self.screen)
@@ -233,26 +233,26 @@ class MainGame:
 
                 entity.animate_bee(self.screen)
 
-                # Blits the line again to draw over dead bees
-                pygame.draw.line(self.screen, BLACK, (self.game_width+4, 0), (self.game_width+4, self.screen_height), 10)
+            # Blits the line again to draw over dead bees
+            pygame.draw.line(self.screen, BLACK, (self.game_width+4, 0), (self.game_width+4, self.screen_height), 10)
 
-                # Redraw shop button
-                self.TowerButton.draw_button(self.screen)
-                self.display_shop_button_images()
+            # Redraw shop button
+            self.TowerButton.draw_button(self.screen)
+            self.display_shop_button_images()
 
-                if self.placing_tower == True:
-                    self.display_ghost_tower()
+            if self.placing_tower == True:
+                self.display_ghost_tower()
 
-                # Draw all of the towers
-                for tower in  self.tower_array:
-                    tower.draw_tower(self.screen)
+            # Draw all of the towers
+            for tower in  self.tower_array:
+                tower.draw_tower(self.screen)
 
 
             self.mouse_pos = pygame.mouse.get_pos()
             self.clicked = pygame.mouse.get_pressed()
 
             # Display the game at 120 fps
-            self.clock.tick(120)
+            self.clock.tick(200)
             pygame.display.update()
 
 
@@ -662,7 +662,7 @@ class Towers:
         self.tower_animation_frame = 0
         self.tower_animation_list = []
         self.tower_animation_steps = 10
-        self.tower_animation_cooldown = 100
+        self.tower_animation_cooldown = 200
 
         self.weapon_size = 48
 
@@ -715,7 +715,7 @@ class Towers:
                 #print("reseting animation")
 
         # Displays the current animation frame on the screen
-        screen.blit(self.tower_animation_list[self.tower_animation_frame], (self.position[0] - self.weapon_size// 2, self.weapon_position[1]- self.weapon_size//2))
+        screen.blit(self.tower_animation_list[self.tower_animation_frame], (self.position[0] - self.weapon_size// 2 + TILE_SIZE//4, self.weapon_position[1]- self.weapon_size//2))
 
 
 
