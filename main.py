@@ -483,7 +483,7 @@ class Map:
 
                     # Say that is has already been explored once we're done with it
                     self.explored.append(self.frontier[0])
-                    print(self.frontier[0], "is explored")
+                    #print(self.frontier[0], "is explored")
 
                     # Remove it from the queue as we've already explored it
                     self.frontier.pop(0)
