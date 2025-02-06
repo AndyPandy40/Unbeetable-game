@@ -148,14 +148,13 @@ class MainGame:
         self.screen.blit(self.shop_coin_image, (self.game_width + 136, 148))
         
 
-        
 
         # Set up spawning bees
         self.bee_array = []
         self.last_bee_spawned = 0
         self.bee_spawn_cooldown = 2000
 
-
+        # Calculate all the tile vectors
         self.NewMap.calc_tile_distances()
         self.mapVectors = self.NewMap.get_vectors()
 
@@ -182,7 +181,7 @@ class MainGame:
                     self.place_tower()
                 
 
-            #print(self.clock.get_fps())
+            print(self.clock.get_fps())
 
             # Updates the tilemap and bee
             self.NewMap.draw_tilemap(self.screen)
@@ -194,7 +193,9 @@ class MainGame:
 
             #self.NewMap.display_vectors(self.screen)
 
-
+            self.display_score()
+            self.display_money()
+            self.display_lives()
 
             self.current_time = pygame.time.get_ticks()
 
@@ -206,8 +207,8 @@ class MainGame:
             if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
                 self.last_bee_spawned = self.current_time
 
-                TopBee = Bees(48, BLACK, 100, 0.5, True, (0,350))
-                BottomBee = Bees(48, BLACK, 100, 0.5, True, (0,650))
+                TopBee = Bees(48, BLACK, 100, 1, True, (0,350))
+                BottomBee = Bees(48, BLACK, 100, 1, True, (0,650))
                 self.bee_array.append(TopBee)
                 self.bee_array.append(BottomBee)
 
@@ -225,7 +226,7 @@ class MainGame:
 
                 bee_tile = entity.what_tile_am_I_on()
                 bee_vector = self.mapVectors[bee_tile]
-                bee_vector = (bee_vector[0] * entity.speed,bee_vector[1] * entity.speed)
+                bee_vector = (bee_vector[0]*entity.speed,bee_vector[1] * entity.speed)
 
                 entity.change_position(bee_vector[0], bee_vector[1])
 
@@ -238,30 +239,21 @@ class MainGame:
             self.TowerButton.draw_button(self.screen)
             self.display_shop_button_images()
 
-            # Display the ghost tower if it has been bought and not placed
             if self.placing_tower == True:
                 self.display_ghost_tower()
 
             # Draw all of the towers
             for tower in self.tower_array:
                 tower.draw_tower(self.screen)
-
-                if tower.check_if_hovering_over(self.mouse_pos[0], self.mouse_pos[1]):
-                    print("hovering over tower")
+                tower.try_to_shoot_bee(self.bee_array)
 
 
             self.mouse_pos = pygame.mouse.get_pos()
             self.clicked = pygame.mouse.get_pressed()
 
-            # Display all the stats
-            self.display_score()
-            self.display_money()
-            self.display_lives()
-
             # Display the game at 120 fps
-            self.clock.tick(120)
+            self.clock.tick(200)
             pygame.display.update()
-
 
 
     def display_score(self):
@@ -294,12 +286,14 @@ class MainGame:
         #Check if player has enough money
         if self.placing_tower == False:
             if self.money >= 100:
+                self.money -= 100
                 self.placing_tower = True
+                
                 self.display_ghost_tower()
 
     def display_ghost_tower(self):
         ghost_tower_image = pygame.transform.scale(self.tower_image, (TILE_SIZE*1.5, TILE_SIZE))
-        ghost_tower_image.set_alpha(80)
+        ghost_tower_image.set_alpha(20)
 
         ghost_tower_height = TILE_SIZE
         ghost_tower_width = TILE_SIZE / 2
@@ -311,15 +305,12 @@ class MainGame:
         if not self.ghost_tower_x_pos >= self.game_width:
             self.screen.blit(ghost_tower_image, [self.ghost_tower_x_pos, self.ghost_tower_y_pos], (0, 0, ghost_tower_width , ghost_tower_height))
 
-        # TODO if the user presses esc stop placing tower
-
         return
 
 
     def place_tower(self):
         if self.ghost_tower_x_pos <= self.game_width:
-            self.money -= 100  
-            NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK)
+            NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK, 50)
             self.tower_array.append(NewTower)
 
 
@@ -483,7 +474,7 @@ class Map:
 
                     # Say that is has already been explored once we're done with it
                     self.explored.append(self.frontier[0])
-                    #print(self.frontier[0], "is explored")
+                    print(self.frontier[0], "is explored")
 
                     # Remove it from the queue as we've already explored it
                     self.frontier.pop(0)
@@ -569,7 +560,6 @@ class Map:
         return self.vectors
 
 
-
 class Bees:
     def __init__(self, size, color, health, speed, exists: bool, position):
         self.sprite_sheet = pygame.image.load("images/bees/bee.png").convert_alpha()
@@ -648,10 +638,16 @@ class Bees:
     def change_position(self, dx, dy):
         self.position = (self.position[0] + dx, self.position[1] + dy)
 
+    def reduce_health(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            self.exists = False
+
+
 
 
 class Towers:
-    def __init__(self, position, color):
+    def __init__(self, position, color, damage):
         self.sprite_sheet = pygame.image.load("images/towers/towerBase.png")
         self.sprite_sheet = pygame.transform.scale(self.sprite_sheet, (TILE_SIZE*1.5, TILE_SIZE))
 
@@ -661,6 +657,8 @@ class Towers:
         self.position = position
 
         self.color = color
+
+        self.damage = damage
 
         self.tower_height = TILE_SIZE 
         self.tower_width = TILE_SIZE / 2
@@ -725,10 +723,25 @@ class Towers:
         # Displays the current animation frame on the screen
         screen.blit(self.tower_animation_list[self.tower_animation_frame], (self.position[0] - self.weapon_size// 2 + TILE_SIZE//4, self.weapon_position[1]- self.weapon_size//2))
 
-    def check_if_hovering_over(self, mouse_x_pos, mouse_y_pos):
-        if self.position[0] <= mouse_x_pos <= self.position[0] + self.tower_width:  # self.tower_width could be wrong
-            if self.position[1] <= mouse_y_pos <= self.position[1] + self.tower_height:
-                return True
+
+    def try_to_shoot_bee(self, bees):
+
+        nearby_bees = []
+        for bee in bees:
+            x_dist_squared = (bee.position[0] - (self.position[0] - TILE_SIZE//4 + TILE_SIZE//2))**2
+            y_dist_squared = (bee.position[1] - (self.position[1] + TILE_SIZE//3))**2
+
+            if x_dist_squared + y_dist_squared <= 5000:
+                nearby_bees.append(bee)
+
+            print(x_dist_squared)
+            print(y_dist_squared)
+        
+        if nearby_bees:
+            nearby_bees[0].reduce_health(self.damage)
+
+
+
 
 
 
