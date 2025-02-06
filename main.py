@@ -726,6 +726,11 @@ class Towers:
 
     def try_to_shoot_bee(self, bees):
 
+        # might be better as a while loop
+        # until a bee is found in range:
+
+        # could check tiles arounf the tower
+
         nearby_bees = []
         for bee in bees:
             x_dist_squared = (bee.position[0] - (self.position[0] - TILE_SIZE//4 + TILE_SIZE//2))**2
