@@ -242,8 +242,8 @@ class MainGame:
             if self.placing_tower == True:
                 self.display_ghost_tower()
 
-            # Draw all of the towers
             for tower in self.tower_array:
+                # Update all of the towers
                 tower.draw_tower(self.screen)
                 if tower.try_to_shoot_bee(self.bee_array, self.screen):
                     self.score += 5
@@ -580,6 +580,7 @@ class Bees:
 
         self.last_update = pygame.time.get_ticks()
         self.current_time = pygame.time.get_ticks()
+        
 
         # Loop through the sprite sheet
         for x in range(self.animation_steps):
@@ -659,25 +660,28 @@ class Towers:
         self.weapon_sprite_sheet = pygame.transform.scale_by(self.weapon_sprite_sheet, 1)
 
         self.position = position
-
         self.color = color
-
         self.damage = damage
         self.firerate = firerate
+
 
         self.tower_height = TILE_SIZE 
         self.tower_width = TILE_SIZE / 2
 
+        # Tower starts on level 1
         self.level = 1
 
+        # Tower has a range of square root of 150
         self.tower_range = 150
 
+        # Set up tower idle animation
         self.tower_animation_frame = 0
         self.tower_animation_list = []
         self.tower_animation_steps = 10
         self.tower_animation_cooldown = 200
         self.tower_column = 0
 
+        # Set up tower attack animation
         self.attack_animation_frame = 0
         self.attack_animation_list = []
         self.attack_animation_steps = 16
@@ -686,22 +690,37 @@ class Towers:
 
         self.weapon_size = 48
 
+        # Set up times for animation
         self.last_update = pygame.time.get_ticks()
-        self.current_time = pygame.time.get_ticks()
+        self.current_time = self.last_update
+        self.last_attack_update = self.current_time
+        
 
         # Loop through the sprite sheet
         for x in range(self.tower_animation_steps):
             # Get the inividual frames for the tower  and append them to an array
             self.tower_animation_list.append(self.get_weapon_image(x, self.weapon_size, self.weapon_size, self.tower_column))
 
-        
+        # Loop through attack sprite sheet and get the frames
         for y in range(self.attack_animation_steps):
             self.attack_animation_list.append(self.get_weapon_image(y, self.weapon_size, self.weapon_size, self.attack_column))
             
+        # Set the weapon position to be just above the tower
         self.weapon_position = (self.position[0], self.position[1] + 30)
 
         self.shooting_bee = False
         
+
+    def get_weapon_image(self, frame, width, height, column):
+
+        image = pygame.Surface((width, height))
+
+        # Blit the frame of the bee onto the surface
+        image.blit(self.weapon_sprite_sheet, (0,0), ((frame*width, height*column, width, height)))
+
+        image.set_colorkey(self.color)
+
+        return image
 
     def draw_tower(self, screen):
         
@@ -716,18 +735,6 @@ class Towers:
             self.animate_weapon(screen)
 
 
-
-    def get_weapon_image(self, frame, width, height, column):
-
-        image = pygame.Surface((width, height))
-
-        # Blit the frame of the bee onto the surface
-        image.blit(self.weapon_sprite_sheet, (0,0), ((frame*width, height*column, width, height)))
-
-        image.set_colorkey(self.color)
-
-        return image
-    
     def animate_weapon(self, screen):
 
         self.current_time = pygame.time.get_ticks()
@@ -742,7 +749,6 @@ class Towers:
             if self.tower_animation_frame >= self.tower_animation_steps:
                 # Loop back to the first frame if it goes over the animation steps
                 self.tower_animation_frame = 0
-                #print("reseting animation")
 
         # Displays the current animation frame on the screen
         screen.blit(self.tower_animation_list[self.tower_animation_frame], (self.position[0] - self.weapon_size// 2 + TILE_SIZE//4, self.weapon_position[1]- self.weapon_size//2))
@@ -750,41 +756,49 @@ class Towers:
 
     def try_to_shoot_bee(self, bees, screen):
 
-        # might be better as a while loop
-        # until a bee is found in range:
-
         # could check tiles around the tower
 
 
         tower_x_center = (self.position[0] - TILE_SIZE//4 + TILE_SIZE//2)
-
         tower_y_center = (self.position[1] + TILE_SIZE//1.5)
 
         nearby_bees = []
+
         for bee in bees:
+            # Find the squared distance to the bee
             x_dist_squared = (bee.position[0] - tower_x_center)**2
             y_dist_squared = (bee.position[1] - tower_y_center)**2
 
+            # If the bee is in range append it to an array
             if x_dist_squared + y_dist_squared <= self.tower_range**2:
                 nearby_bees.append(bee)
 
-            #pygame.draw.circle(screen, (BLACK, 50), ((self.position[0] - TILE_SIZE//4 + TILE_SIZE//2), (self.position[1] + TILE_SIZE//3)), 70)
-
+        # Show the tower's range
         circle_surface = pygame.Surface((self.tower_range*2, self.tower_range*2), pygame.SRCALPHA)
         pygame.draw.circle(circle_surface, (0, 0, 0, 40), (self.tower_range, self.tower_range), self.tower_range)
-
         screen.blit(circle_surface, (tower_x_center - self.tower_range, tower_y_center-self.tower_range))
 
-        #print(x_dist_squared)
-        #print(y_dist_squared)
-
+        # If there is a bee nearby
         if nearby_bees:
-            if nearby_bees[0].reduce_health(self.damage):
+            # And if the tower isn't already shooting a bee
+            if self.shooting_bee == False:
+                nearby_bees[0].reduce_health(self.damage)
                 self.shooting_bee = True
                 return True
 
     def play_shoot_animation(self, screen):
         self.current_time = pygame.time.get_ticks()
+
+        if self.current_time - self.last_attack_update >= self.attack_animation_cooldown:
+            self.last_attack_update = self.current_time
+            
+            self.attack_animation_frame += 1
+
+            if self.attack_animation_frame >= self.attack_animation_steps:
+                self.attack_animation_frame = 0
+                self.shooting_bee = False
+
+        screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.position[0] - self.weapon_size// 2 + TILE_SIZE//4, self.weapon_position[1]- self.weapon_size//2))
 
 
 
