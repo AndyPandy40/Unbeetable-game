@@ -311,7 +311,7 @@ class MainGame:
 
     def place_tower(self):
         if self.ghost_tower_x_pos <= self.game_width:
-            NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK, 50, 500)
+            NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK, 50)
             self.tower_array.append(NewTower)
 
 
@@ -652,7 +652,7 @@ class Bees:
 
 
 class Towers:
-    def __init__(self, position, color, damage, firerate):
+    def __init__(self, position, color, damage):
         self.sprite_sheet = pygame.image.load("images/towers/towerBase.png")
         self.sprite_sheet = pygame.transform.scale(self.sprite_sheet, (TILE_SIZE*1.5, TILE_SIZE))
 
@@ -662,11 +662,10 @@ class Towers:
         self.position = position
         self.color = color
         self.damage = damage
-        self.firerate = firerate
 
 
         self.tower_height = TILE_SIZE 
-        self.tower_width = TILE_SIZE / 2
+        self.tower_width = TILE_SIZE // 2
 
         # Tower starts on level 1
         self.level = 1
@@ -706,7 +705,7 @@ class Towers:
             self.attack_animation_list.append(self.get_weapon_image(y, self.weapon_size, self.weapon_size, self.attack_column))
             
         # Set the weapon position to be just above the tower
-        self.weapon_position = (self.position[0], self.position[1] + 30)
+        self.weapon_position = (self.position[0] - self.weapon_size// 2 + TILE_SIZE//4, self.position[1] + 30 - self.weapon_size//2)
 
         self.shooting_bee = False
         
@@ -721,6 +720,7 @@ class Towers:
         image.set_colorkey(self.color)
 
         return image
+
 
     def draw_tower(self, screen):
         
@@ -751,7 +751,7 @@ class Towers:
                 self.tower_animation_frame = 0
 
         # Displays the current animation frame on the screen
-        screen.blit(self.tower_animation_list[self.tower_animation_frame], (self.position[0] - self.weapon_size// 2 + TILE_SIZE//4, self.weapon_position[1]- self.weapon_size//2))
+        screen.blit(self.tower_animation_list[self.tower_animation_frame], (self.weapon_position[0], self.weapon_position[1]))
 
 
     def try_to_shoot_bee(self, bees, screen):
@@ -778,11 +778,13 @@ class Towers:
         pygame.draw.circle(circle_surface, (0, 0, 0, 40), (self.tower_range, self.tower_range), self.tower_range)
         screen.blit(circle_surface, (tower_x_center - self.tower_range, tower_y_center-self.tower_range))
 
-        # If there is a bee nearby
+        # Check if there is a bee nearby
         if nearby_bees:
             # And if the tower isn't already shooting a bee
             if self.shooting_bee == False:
+                # Deal the damage to the bee
                 nearby_bees[0].reduce_health(self.damage)
+
                 self.shooting_bee = True
                 return True
 
@@ -798,7 +800,7 @@ class Towers:
                 self.attack_animation_frame = 0
                 self.shooting_bee = False
 
-        screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.position[0] - self.weapon_size// 2 + TILE_SIZE//4, self.weapon_position[1]- self.weapon_size//2))
+        screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.weapon_position[0], self.weapon_position[1]))
 
 
 
