@@ -199,11 +199,14 @@ class MainGame:
 
             self.current_time = pygame.time.get_ticks()
 
+
+            # Slowly decrease bee spawn time
             self.bee_spawn_cooldown -= self.current_time/80000
 
             if self.bee_spawn_cooldown <= 500:
                 self.bee_spawn_cooldown = 500
 
+            # Spawn a bee at the top and bottom of the map
             if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
                 self.last_bee_spawned = self.current_time
 
@@ -212,18 +215,25 @@ class MainGame:
                 self.bee_array.append(TopBee)
                 self.bee_array.append(BottomBee)
 
-
+            
             for entity in self.bee_array:
+                # If a bee reaches the end of the map
                 if entity.position[0] >= self.game_width-5:
+
+                    # Kill the bee
                     entity.exists = False
+
+                    # Remove one life
                     self.lives -= 1
 
                 self.current_time = pygame.time.get_ticks()
 
+
+                # Remove any dead bees from the bee array
                 if not entity.exists:
                     self.bee_array.remove(entity)
 
-
+                # Move each bee based on the vector of the tile they're on
                 bee_tile = entity.what_tile_am_I_on()
                 bee_vector = self.mapVectors[bee_tile]
                 bee_vector = (bee_vector[0]*entity.speed,bee_vector[1] * entity.speed)
@@ -239,14 +249,18 @@ class MainGame:
             self.TowerButton.draw_button(self.screen)
             self.display_shop_button_images()
 
+            # Display ghost tower if buying tower
             if self.placing_tower == True:
                 self.display_ghost_tower()
 
+            # Update all of the towers
             for tower in self.tower_array:
-                # Update all of the towers
                 tower.draw_tower(self.screen)
+
+                # If the tower kills the bee
                 if tower.try_to_shoot_bee(self.bee_array, self.screen):
                     self.score += 5
+                    self.money += 10
 
 
             self.mouse_pos = pygame.mouse.get_pos()
@@ -641,7 +655,10 @@ class Bees:
         self.position = (self.position[0] + dx, self.position[1] + dy)
 
     def reduce_health(self, damage):
+        # Deal damage
         self.health -= damage
+
+        # If the bee is killed
         if self.health <= 0:
             self.exists = False
 
@@ -729,10 +746,11 @@ class Towers:
 
         screen.blit(self.sprite_sheet, (tower_x_pos, tower_y_pos), ((self.level-1)*(self.tower_width), 0, self.tower_width , self.tower_height))
 
-        if self.shooting_bee:
-            self.play_shoot_animation(screen)
-        else:
+        # Play correct weapon aniumation
+        if not self.shooting_bee:
             self.animate_weapon(screen)
+        else:
+            self.play_shoot_animation(screen)
 
 
     def animate_weapon(self, screen):
@@ -782,11 +800,9 @@ class Towers:
         if nearby_bees:
             # And if the tower isn't already shooting a bee
             if self.shooting_bee == False:
-                # Deal the damage to the bee
-                nearby_bees[0].reduce_health(self.damage)
-
                 self.shooting_bee = True
-                return True
+
+                self.current_bee_under_attack = nearby_bees[0]
 
     def play_shoot_animation(self, screen):
         self.current_time = pygame.time.get_ticks()
@@ -798,11 +814,16 @@ class Towers:
 
             if self.attack_animation_frame >= self.attack_animation_steps:
                 self.attack_animation_frame = 0
+
+                # If the animation is over a bee is no longer being shot
                 self.shooting_bee = False
 
+                # Deal the damage to the bee
+                if self.current_bee_under_attack.reduce_health(self.damage):
+                    # If the bee died, return True so score can be increased
+                    return True
+
         screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.weapon_position[0], self.weapon_position[1]))
-
-
 
 
 
