@@ -27,7 +27,6 @@ def display_text(text, position, size, color, screen):
 
 
 
-
 class GameStartScreen:
     def __init__(self):
         self.screen_width = 1440
@@ -168,18 +167,7 @@ class MainGame:
         # Set up towers
         self.tower_array = []
 
-        self.tower_places = [
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
-            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
-            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
-            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
-            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        ]
+        self.tower_places = self.NewMap.get_tilemap()
 
         self.ghost_tower_x_pos = 0
         self.ghost_tower_y_pos = 0
@@ -588,6 +576,9 @@ class Map:
     def get_vectors(self):
         return self.vectors
 
+    def get_tilemap(self):
+        return self.tilemap
+
 
 class Bees:
     def __init__(self, size, color, health, speed, exists: bool, position):
@@ -678,6 +669,15 @@ class Bees:
 
             return True
         return False
+    
+    def get_x_position(self):
+        return self.position[0]
+    
+    def get_y_position(self):
+        return self.position[1]
+    
+    def get_size(self):
+        return self.size
 
 
 class Towers:
@@ -786,10 +786,10 @@ class Towers:
 
     def try_to_shoot_bee(self, bees, screen):
 
-        # Could check tiles around the tower
+        # Could check tiles around the tower first
 
         tower_x_center = (self.position[0] - TILE_SIZE//4 + TILE_SIZE//2)
-        tower_y_center = (self.position[1] + TILE_SIZE//1.5)
+        tower_y_center = (self.position[1] + TILE_SIZE//1.5 + 15)
 
         nearby_bees = []
 
@@ -835,6 +835,23 @@ class Towers:
                     return True
 
         screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.weapon_position[0], self.weapon_position[1]))
+
+        scale_factor = 0.8
+
+        current_surface = self.attack_animation_list[self.attack_animation_frame]
+        scaled_surface = pygame.transform.scale_by(current_surface, scale_factor)
+
+
+        old_surface_size = current_surface.get_size()[1]
+
+        position_difference = (1-scale_factor) * old_surface_size
+
+        bee_x_position = self.current_bee_under_attack.get_x_position() - (self.current_bee_under_attack.get_size() // 2) + (position_difference // 2)
+        bee_y_position = self.current_bee_under_attack.get_y_position() - (self.current_bee_under_attack.get_size() // 2) + (position_difference // 2)
+
+
+
+        screen.blit(scaled_surface, (bee_x_position, bee_y_position))
 
 
 
