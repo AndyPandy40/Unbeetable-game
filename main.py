@@ -148,7 +148,6 @@ class MainGame:
         self.screen.blit(self.shop_coin_image, (self.game_width + 136, 148))
         
 
-
         # Set up spawning bees
         self.bee_array = []
         self.last_bee_spawned = 0
@@ -163,9 +162,24 @@ class MainGame:
         self.money = 10000
         self.lives = 5
 
+        # Not currently placing tower
         self.placing_tower = False
 
+        # Set up towers
         self.tower_array = []
+
+        self.tower_places = [
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ]
 
         self.ghost_tower_x_pos = 0
         self.ghost_tower_y_pos = 0
@@ -296,7 +310,6 @@ class MainGame:
         self.screen.blit(self.shop_coin_image, (self.game_width + 136, 148))
 
 
-
     def buy_tower(self):
         #Check if player has enough money
         if self.placing_tower == False:
@@ -305,6 +318,7 @@ class MainGame:
                 self.placing_tower = True
                 
                 self.display_ghost_tower()
+
 
     def display_ghost_tower(self):
         ghost_tower_image = pygame.transform.scale(self.tower_image, (TILE_SIZE*1.5, TILE_SIZE))
@@ -325,11 +339,15 @@ class MainGame:
 
     def place_tower(self):
         if self.ghost_tower_x_pos <= self.game_width:
-            NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK, 50)
-            self.tower_array.append(NewTower)
+            x_tile = self.ghost_tower_x_pos // TILE_SIZE
+            y_tile = self.ghost_tower_y_pos // TILE_SIZE
 
+            if self.tower_places[y_tile+1][x_tile] != 1:
+                NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK, 50)
+                self.tower_array.append(NewTower)
 
-            self.placing_tower = False
+                self.tower_places[y_tile+1][x_tile] = 1
+                self.placing_tower = False
         
 
     def quit(self):
@@ -404,14 +422,14 @@ class Map:
         }
 
         self.tilemap = [
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 
-            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0], 
-            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0], 
-            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0], 
-            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1], 
-            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1], 
-            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0], 
-            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0], 
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
             [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ]
@@ -429,8 +447,6 @@ class Map:
                 # Displays them in order using their position in the array and size
                 if col != 15:
                     self.background_surface.blit(tile_image, (col * TILE_SIZE, row * TILE_SIZE)) 
-
-
 
 
         # Set up everything for pathfinding
@@ -506,8 +522,6 @@ class Map:
             vector = self.find_tile_vector(key)
             self.vectors[key] = vector
            
-
-        
 
         #print("final distances", self.distances)
 
@@ -666,8 +680,6 @@ class Bees:
         return False
 
 
-
-
 class Towers:
     def __init__(self, position, color, damage):
         self.sprite_sheet = pygame.image.load("images/towers/towerBase.png")
@@ -774,8 +786,7 @@ class Towers:
 
     def try_to_shoot_bee(self, bees, screen):
 
-        # could check tiles around the tower
-
+        # Could check tiles around the tower
 
         tower_x_center = (self.position[0] - TILE_SIZE//4 + TILE_SIZE//2)
         tower_y_center = (self.position[1] + TILE_SIZE//1.5)
