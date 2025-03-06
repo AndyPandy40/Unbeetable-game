@@ -182,8 +182,8 @@ class MainGame:
                 if event.type == pygame.MOUSEBUTTONDOWN and self.placing_tower == True:
                     self.place_tower()
                 
-
-            print(self.clock.get_fps())
+            # Show fps
+            #print(self.clock.get_fps())
 
             # Updates the tilemap and bee
             self.NewMap.draw_tilemap(self.screen)
@@ -203,10 +203,10 @@ class MainGame:
 
 
             # Slowly decrease bee spawn time
-            self.bee_spawn_cooldown -= self.current_time/80000
+            self.bee_spawn_cooldown -= self.current_time/200000
 
             if self.bee_spawn_cooldown <= 500:
-                self.bee_spawn_cooldown = 500
+                self.bee_spawn_cooldown = 700
 
             # Spawn a bee at the top and bottom of the map
             if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
@@ -238,7 +238,7 @@ class MainGame:
                 # Move each bee based on the vector of the tile they're on
                 bee_tile = entity.what_tile_am_I_on()
                 bee_vector = self.mapVectors[bee_tile]
-                bee_vector = (bee_vector[0]*entity.speed,bee_vector[1] * entity.speed)
+                bee_vector = (bee_vector[0] * entity.speed,bee_vector[1] * entity.speed)
 
                 entity.change_position(bee_vector[0], bee_vector[1])
 
@@ -624,6 +624,7 @@ class Bees:
 
         return image
     
+    
     def animate_bee(self, screen):
 
         self.current_time = pygame.time.get_ticks()
@@ -678,6 +679,9 @@ class Bees:
     
     def get_size(self):
         return self.size
+    
+    def does_exist(self):
+        return self.exists
 
 
 class Towers:
@@ -737,6 +741,7 @@ class Towers:
         self.weapon_position = (self.position[0] - self.weapon_size// 2 + TILE_SIZE//4, self.position[1] + 30 - self.weapon_size//2)
 
         self.shooting_bee = False
+        self.killed_bee = False
         
 
     def get_weapon_image(self, frame, width, height, column):
@@ -811,47 +816,60 @@ class Towers:
         if nearby_bees:
             # And if the tower isn't already shooting a bee
             if self.shooting_bee == False:
-                self.shooting_bee = True
 
-                self.current_bee_under_attack = nearby_bees[0]
+                    self.shooting_bee = True
+
+                    self.current_bee_under_attack = nearby_bees[0]
+
+                    # If a bee has been killed return True so score and money can be added
+                    if self.killed_bee:
+                        self.killed_bee = False
+                        return True
 
     def play_shoot_animation(self, screen):
-        self.current_time = pygame.time.get_ticks()
 
-        if self.current_time - self.last_attack_update >= self.attack_animation_cooldown:
-            self.last_attack_update = self.current_time
+        if self.current_bee_under_attack.does_exist():
+            self.current_time = pygame.time.get_ticks()
+
             
-            self.attack_animation_frame += 1
 
-            if self.attack_animation_frame >= self.attack_animation_steps:
-                self.attack_animation_frame = 0
+            if self.current_time - self.last_attack_update >= self.attack_animation_cooldown:
+                self.last_attack_update = self.current_time
+                
+                self.attack_animation_frame += 1
 
-                # If the animation is over a bee is no longer being shot
-                self.shooting_bee = False
+                if self.attack_animation_frame >= self.attack_animation_steps:
+                    self.attack_animation_frame = 0
 
-                # Deal the damage to the bee
-                if self.current_bee_under_attack.reduce_health(self.damage):
-                    # If the bee died, return True so score can be increased
-                    return True
+                    # If the animation is over a bee is no longer being shot
+                    self.shooting_bee = False
 
-        screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.weapon_position[0], self.weapon_position[1]))
+                    # Deal the damage to the bee
+                    if self.current_bee_under_attack.reduce_health(self.damage):
 
-        scale_factor = 0.8
+                        self.killed_bee = True
 
-        current_surface = self.attack_animation_list[self.attack_animation_frame]
-        scaled_surface = pygame.transform.scale_by(current_surface, scale_factor)
+            screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.weapon_position[0], self.weapon_position[1]))
 
+            scale_factor = 0.8
 
-        old_surface_size = current_surface.get_size()[1]
-
-        position_difference = (1-scale_factor) * old_surface_size
-
-        bee_x_position = self.current_bee_under_attack.get_x_position() - (self.current_bee_under_attack.get_size() // 2) + (position_difference // 2)
-        bee_y_position = self.current_bee_under_attack.get_y_position() - (self.current_bee_under_attack.get_size() // 2) + (position_difference // 2)
+            current_surface = self.attack_animation_list[self.attack_animation_frame]
+            scaled_surface = pygame.transform.scale_by(current_surface, scale_factor)
 
 
+            old_surface_size = current_surface.get_size()[1]
 
-        screen.blit(scaled_surface, (bee_x_position, bee_y_position))
+            position_difference = (1-scale_factor) * old_surface_size
+
+            bee_x_position = self.current_bee_under_attack.get_x_position() - (self.current_bee_under_attack.get_size() // 2) + (position_difference // 2)
+            bee_y_position = self.current_bee_under_attack.get_y_position() - (self.current_bee_under_attack.get_size() // 2) + (position_difference // 2)
+
+
+
+            screen.blit(scaled_surface, (bee_x_position, bee_y_position))
+
+        else:
+            self.shooting_bee = False
 
 
 
