@@ -129,7 +129,6 @@ class MainGame:
         self.TowerButton = Button(self.screen, (10, 178, 21), LIGHT_GREEN, "100", (self.game_width+35, TILE_SIZE+30), 320, 75, 35, self.buy_tower)
         self.TowerButton.draw_button(self.screen)
 
-
         # Display tower image on button
         self.shop_tower_height = TILE_SIZE*0.75
         self.shop_tower_width = self.shop_tower_height//3
@@ -181,6 +180,10 @@ class MainGame:
 
                 if event.type == pygame.MOUSEBUTTONDOWN and self.placing_tower == True:
                     self.place_tower()
+
+                if event.type == pygame.K_1 and self.placing_tower == False:
+                    if self.money >= 100:
+                        self.buy_tower()
                 
             # Show fps
             #print(self.clock.get_fps())
@@ -229,7 +232,6 @@ class MainGame:
                     self.lives -= 1
 
                 self.current_time = pygame.time.get_ticks()
-
 
                 # Remove any dead bees from the bee array
                 if not entity.exists:
