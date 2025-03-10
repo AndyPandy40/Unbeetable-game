@@ -149,7 +149,7 @@ class MainGame:
         # Set up spawning bees
         self.bee_array = []
         self.last_bee_spawned = 0
-        self.bee_spawn_cooldown = 2000
+        self.bee_spawn_cooldown = 8000
 
         # Calculate all the tile vectors
         self.NewMap.calc_tile_distances()
@@ -157,7 +157,7 @@ class MainGame:
 
 
         self.score = 0
-        self.money = 10000
+        self.money = 200
         self.lives = 5
 
         # Not currently placing tower
@@ -179,10 +179,13 @@ class MainGame:
                     self.quit()
 
                 if event.type == pygame.MOUSEBUTTONDOWN and self.placing_tower == True:
-                    self.place_tower()
+                    if event.button == 1:
+                        self.place_tower()
 
-                if event.type == pygame.K_1 and self.placing_tower == False:
-                    if self.money >= 100:
+                if event.type == pygame.KEYDOWN:
+                    print("key pressed")
+                    if event.key == pygame.K_1 and self.placing_tower == False:
+                        print("pressed 1 key")
                         self.buy_tower()
                 
             # Show fps
@@ -206,7 +209,7 @@ class MainGame:
 
 
             # Slowly decrease bee spawn time
-            self.bee_spawn_cooldown -= self.current_time/200000
+            self.bee_spawn_cooldown -= self.current_time/1000000
 
             if self.bee_spawn_cooldown <= 500:
                 self.bee_spawn_cooldown = 700
@@ -495,7 +498,7 @@ class Map:
 
                     # Say that is has already been explored once we're done with it
                     self.explored.append(self.frontier[0])
-                    print(self.frontier[0], "is explored")
+                    #print(self.frontier[0], "is explored")
 
                     # Remove it from the queue as we've already explored it
                     self.frontier.pop(0)
@@ -728,6 +731,10 @@ class Towers:
         self.last_update = pygame.time.get_ticks()
         self.current_time = self.last_update
         self.last_attack_update = self.current_time
+
+        # Set up the center of tower
+        self.tower_x_center = (self.position[0] - TILE_SIZE//4 + TILE_SIZE//2)
+        self.tower_y_center = (self.position[1] + TILE_SIZE//1.5 + 15)
         
 
         # Loop through the sprite sheet
@@ -795,15 +802,14 @@ class Towers:
 
         # Could check tiles around the tower first
 
-        tower_x_center = (self.position[0] - TILE_SIZE//4 + TILE_SIZE//2)
-        tower_y_center = (self.position[1] + TILE_SIZE//1.5 + 15)
+
 
         nearby_bees = []
 
         for bee in bees:
             # Find the squared distance to the bee
-            x_dist_squared = (bee.position[0] - tower_x_center)**2
-            y_dist_squared = (bee.position[1] - tower_y_center)**2
+            x_dist_squared = (bee.position[0] - self.tower_x_center)**2
+            y_dist_squared = (bee.position[1] - self.tower_y_center)**2
 
             # If the bee is in range append it to an array
             if x_dist_squared + y_dist_squared <= self.tower_range**2:
@@ -812,7 +818,7 @@ class Towers:
         # Show the tower's range
         circle_surface = pygame.Surface((self.tower_range*2, self.tower_range*2), pygame.SRCALPHA)
         pygame.draw.circle(circle_surface, (0, 0, 0, 40), (self.tower_range, self.tower_range), self.tower_range)
-        screen.blit(circle_surface, (tower_x_center - self.tower_range, tower_y_center-self.tower_range))
+        screen.blit(circle_surface, (self.tower_x_center - self.tower_range, self.tower_y_center-self.tower_range))
 
         # Check if there is a bee nearby
         if nearby_bees:
@@ -851,7 +857,7 @@ class Towers:
 
                         self.killed_bee = True
 
-            screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.weapon_position[0], self.weapon_position[1]))
+            
 
             scale_factor = 0.8
 
@@ -869,6 +875,11 @@ class Towers:
 
 
             screen.blit(scaled_surface, (bee_x_position, bee_y_position))
+
+            # Blit the tower animation after
+            screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.weapon_position[0], self.weapon_position[1]))
+
+            pygame.draw.line(screen, WHITE, (self.tower_x_center, self.tower_y_center), (int(bee_x_position), int(bee_y_position)))
 
         else:
             self.shooting_bee = False
