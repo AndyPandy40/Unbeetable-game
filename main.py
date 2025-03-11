@@ -183,10 +183,13 @@ class MainGame:
                         self.place_tower()
 
                 if event.type == pygame.KEYDOWN:
-                    print("key pressed")
                     if event.key == pygame.K_1 and self.placing_tower == False:
-                        print("pressed 1 key")
                         self.buy_tower()
+
+                    if event.key == pygame.K_ESCAPE and self.placing_tower == True:
+                        print("pressed esc key")
+                        self.placing_tower = False
+                        
                 
             # Show fps
             #print(self.clock.get_fps())
@@ -307,7 +310,7 @@ class MainGame:
         #Check if player has enough money
         if self.placing_tower == False:
             if self.money >= 100:
-                self.money -= 100
+                
                 self.placing_tower = True
                 
                 self.display_ghost_tower()
@@ -315,7 +318,7 @@ class MainGame:
 
     def display_ghost_tower(self):
         ghost_tower_image = pygame.transform.scale(self.tower_image, (TILE_SIZE*1.5, TILE_SIZE))
-        ghost_tower_image.set_alpha(20)
+        ghost_tower_image.set_alpha(60)
 
         ghost_tower_height = TILE_SIZE
         ghost_tower_width = TILE_SIZE / 2
@@ -326,8 +329,6 @@ class MainGame:
 
         if not self.ghost_tower_x_pos >= self.game_width:
             self.screen.blit(ghost_tower_image, [self.ghost_tower_x_pos, self.ghost_tower_y_pos], (0, 0, ghost_tower_width , ghost_tower_height))
-
-        return
 
 
     def place_tower(self):
@@ -340,6 +341,7 @@ class MainGame:
                 self.tower_array.append(NewTower)
 
                 self.tower_places[y_tile+1][x_tile] = 1
+                self.money -= 100
                 self.placing_tower = False
         
 
@@ -879,7 +881,7 @@ class Towers:
             # Blit the tower animation after
             screen.blit(self.attack_animation_list[self.attack_animation_frame], (self.weapon_position[0], self.weapon_position[1]))
 
-            pygame.draw.line(screen, WHITE, (self.tower_x_center, self.tower_y_center), (int(bee_x_position), int(bee_y_position)))
+            #pygame.draw.line(screen, WHITE, (self.tower_x_center, self.tower_y_center), (int(bee_x_position), int(bee_y_position)))
 
         else:
             self.shooting_bee = False
