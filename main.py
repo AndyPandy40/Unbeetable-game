@@ -860,22 +860,24 @@ class Towers:
                         self.killed_bee = True
 
             
-
+            # Draw the weapon image 0.8x the size
             scale_factor = 0.8
 
+            # Scale the previous weapon image b the scale factor
             current_surface = self.attack_animation_list[self.attack_animation_frame]
             scaled_surface = pygame.transform.scale_by(current_surface, scale_factor)
 
-
+            # Get the original image size
             old_surface_size = current_surface.get_size()[1]
 
             position_difference = (1-scale_factor) * old_surface_size
 
+            # Calculate the center of the bee
             bee_x_position = self.current_bee_under_attack.get_x_position() - (self.current_bee_under_attack.get_size() // 2) + (position_difference // 2)
             bee_y_position = self.current_bee_under_attack.get_y_position() - (self.current_bee_under_attack.get_size() // 2) + (position_difference // 2)
 
 
-
+            # Blit the scaled attack animation frame onto the bee
             screen.blit(scaled_surface, (bee_x_position, bee_y_position))
 
             # Blit the tower animation after
