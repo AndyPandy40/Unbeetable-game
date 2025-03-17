@@ -149,7 +149,7 @@ class MainGame:
         # Set up spawning bees
         self.bee_array = []
         self.last_bee_spawned = 0
-        self.bee_spawn_cooldown = 8000
+        self.bee_spawn_cooldown = 800
 
         # Calculate all the tile vectors
         self.NewMap.calc_tile_distances()
@@ -661,17 +661,21 @@ class Bees:
         # Displays the current animation frame on the screen
         screen.blit(self.animation_list[self.animation_frame], (self.position[0] - self.size// 2, self.position[1]- self.size//2))
         
-        self.bee_x_center = self.position[0] - self.size // 2
-        self.bee_y_center = self.position[1] - self.size // 2
+
 
 
     def display_health_bar(self, screen):
+
         red_rectangle_length = 20
-        red_rectangle_height = 2
+        rectangle_height = 2
 
-        health_bar_location = self.bee_x_center, self.bee_y_center + 10
+        green_rectangle_length = red_rectangle_length * (self.health/self.original_health)
 
-        pygame.draw.rect(screen, RED, (health_bar_location[0]-red_rectangle_length//2, health_bar_location[1], red_rectangle_length, red_rectangle_height))
+        health_bar_location = self.position[0] - red_rectangle_length // 2, self.position[1] - 10
+
+        pygame.draw.rect(screen, RED, (health_bar_location[0], health_bar_location[1], red_rectangle_length, rectangle_height))
+        pygame.draw.rect(screen, GREEN, (health_bar_location[0], health_bar_location[1], green_rectangle_length, rectangle_height))
+        print(self.health, self.original_health)
 
 
     def what_tile_am_I_on(self):
