@@ -593,9 +593,11 @@ class Bees:
         self.size = size
         self.color = color
         self.health = health
+        self.original_health = self.health
         self.speed = speed
         self.exists = exists
         self.position = position
+
         
 
         # Set up everything needed for the animation
@@ -617,6 +619,8 @@ class Bees:
         # Set up properties for bee pathfinding frequency
         self.last_movement_update = 0
 
+        self.showing_health_bar = False
+
 
     def get_image(self, level, width, height):
 
@@ -636,6 +640,9 @@ class Bees:
 
         self.current_time = pygame.time.get_ticks()
 
+        if self.health != self.original_health:
+            self.showing_health_bar = True 
+
         # Check if it's time to update the frame
         if self.current_time - self.last_update >= self.animation_cooldown:
             self.last_update = self.current_time
@@ -648,9 +655,23 @@ class Bees:
                 self.animation_frame = 0
                 #print("reseting animation")
 
+        if self.showing_health_bar == True:
+            self.display_health_bar(screen)
+
         # Displays the current animation frame on the screen
         screen.blit(self.animation_list[self.animation_frame], (self.position[0] - self.size// 2, self.position[1]- self.size//2))
+        
+        self.bee_x_center = self.position[0] - self.size // 2
+        self.bee_y_center = self.position[1] - self.size // 2
 
+
+    def display_health_bar(self, screen):
+        red_rectangle_length = 20
+        red_rectangle_height = 2
+
+        health_bar_location = self.bee_x_center, self.bee_y_center + 10
+
+        pygame.draw.rect(screen, RED, (health_bar_location[0]-red_rectangle_length//2, health_bar_location[1], red_rectangle_length, red_rectangle_height))
 
 
     def what_tile_am_I_on(self):
@@ -689,6 +710,12 @@ class Bees:
     
     def does_exist(self):
         return self.exists
+    
+    def get_x_center(self):
+        return self.bee_x_center
+    
+    def get_y_center(self):
+        return self.bee_y_center
 
 
 class Towers:
