@@ -166,6 +166,7 @@ class MainGame:
         # Set up towers
         self.tower_array = []
 
+        # Make sure the towers aren't placed on the path
         self.tower_places = self.NewMap.get_tilemap()
 
         self.ghost_tower_x_pos = 0
@@ -187,8 +188,10 @@ class MainGame:
                         self.buy_tower()
 
                     if event.key == pygame.K_ESCAPE and self.placing_tower == True:
-                        print("pressed esc key")
                         self.placing_tower = False
+
+                    if event.key == pygame.K_p:
+                        self.pause_game()
                         
                 
             # Show fps
@@ -343,7 +346,9 @@ class MainGame:
                 self.tower_places[y_tile+1][x_tile] = 1
                 self.money -= 100
                 self.placing_tower = False
-        
+
+    def pause_game(self):
+        paused = True
 
     def quit(self):
         pygame.quit()
