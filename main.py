@@ -194,7 +194,11 @@ class MainGame:
             # Show fps
             #print(self.clock.get_fps())
 
-            # Updates the tilemap and bee
+            original_clip = self.screen.get_clip()
+            self.screen.set_clip((0, 0, self.game_width, self.game_height))
+
+
+            # Updates the tilemap and bees
             self.NewMap.draw_tilemap(self.screen)
             
             
@@ -204,9 +208,7 @@ class MainGame:
 
             #self.NewMap.display_vectors(self.screen)
 
-            self.display_score()
-            self.display_money()
-            self.display_lives()
+
 
             self.current_time = pygame.time.get_ticks()
 
@@ -266,9 +268,7 @@ class MainGame:
             # Blits the line again to draw over dead bees
             pygame.draw.line(self.screen, BLACK, (self.game_width+4, 0), (self.game_width+4, self.screen_height), 10)
 
-            # Redraw shop button
-            self.TowerButton.draw_button(self.screen)
-            self.display_shop_button_images()
+
 
             # Display ghost tower if buying tower
             if self.placing_tower == True:
@@ -282,6 +282,16 @@ class MainGame:
                 if tower.try_to_shoot_bee(self.bee_array, self.screen):
                     self.score += 5
                     self.money += 10
+
+            self.screen.set_clip(original_clip)
+
+            self.display_score()
+            self.display_money()
+            self.display_lives()
+
+            # Redraw shop button
+            self.TowerButton.draw_button(self.screen)
+            self.display_shop_button_images()
 
 
             self.mouse_pos = pygame.mouse.get_pos()
