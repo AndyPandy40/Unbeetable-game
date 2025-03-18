@@ -149,7 +149,7 @@ class MainGame:
         # Set up spawning bees
         self.bee_array = []
         self.last_bee_spawned = 0
-        self.bee_spawn_cooldown = 2000
+        self.bee_spawn_cooldown = 800
 
         # Calculate all the tile vectors
         self.NewMap.calc_tile_distances()
@@ -166,7 +166,6 @@ class MainGame:
         # Set up towers
         self.tower_array = []
 
-        # Make sure the towers aren't placed on the path
         self.tower_places = self.NewMap.get_tilemap()
 
         self.ghost_tower_x_pos = 0
@@ -188,10 +187,8 @@ class MainGame:
                         self.buy_tower()
 
                     if event.key == pygame.K_ESCAPE and self.placing_tower == True:
+                        print("pressed esc key")
                         self.placing_tower = False
-
-                    if event.key == pygame.K_p:
-                        self.pause_game()
                         
                 
             # Show fps
@@ -248,8 +245,19 @@ class MainGame:
 
                 # Move each bee based on the vector of the tile they're on
                 bee_tile = entity.what_tile_am_I_on()
-                bee_vector = self.mapVectors[bee_tile]
-                bee_vector = (bee_vector[0] * entity.speed,bee_vector[1] * entity.speed)
+                tile_bee_vector = self.mapVectors[bee_tile]
+
+                bee_tile = pygame.Vector2(bee_tile)
+                tile_bee_vector = pygame.Vector2(tile_bee_vector)
+
+                next_tile = bee_tile + tile_bee_vector
+
+                next_tile_center_pos = TILE_SIZE * (next_tile + pygame.Vector2(0.5, 0.5))
+
+                bee_direction = next_tile_center_pos - pygame.Vector2(entity.get_position())
+
+                bee_vector = bee_direction.normalize() * entity.speed
+                
 
                 entity.change_position(bee_vector[0], bee_vector[1])
 
@@ -346,9 +354,7 @@ class MainGame:
                 self.tower_places[y_tile+1][x_tile] = 1
                 self.money -= 100
                 self.placing_tower = False
-
-    def pause_game(self):
-        paused = True
+        
 
     def quit(self):
         pygame.quit()
@@ -426,8 +432,8 @@ class Map:
             [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
             [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
             [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
             [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
             [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
             [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
@@ -626,9 +632,6 @@ class Bees:
 
         self.showing_health_bar = False
 
-        self.last_health = self.health
-        self.current_health = self.health
-
 
     def get_image(self, level, width, height):
 
@@ -676,24 +679,13 @@ class Bees:
 
         red_rectangle_length = 20
         rectangle_height = 2
+
+        green_rectangle_length = red_rectangle_length * (self.health/self.original_health)
+
         health_bar_location = self.position[0] - red_rectangle_length // 2, self.position[1] - 10
-        
-        self.current_health = self.health
-
-
-        if self.current_health != self.last_health:
-            self.green_rectangle_length = red_rectangle_length * (self.health/self.original_health)
-            
-
-        
 
         pygame.draw.rect(screen, RED, (health_bar_location[0], health_bar_location[1], red_rectangle_length, rectangle_height))
-        pygame.draw.rect(screen, GREEN, (health_bar_location[0], health_bar_location[1], self.green_rectangle_length, rectangle_height))
-        
-
-
-
-        self.last_health = self.current_health
+        pygame.draw.rect(screen, GREEN, (health_bar_location[0], health_bar_location[1], green_rectangle_length, rectangle_height))
 
 
     def what_tile_am_I_on(self):
@@ -726,6 +718,10 @@ class Bees:
     
     def get_y_position(self):
         return self.position[1]
+    
+    def get_position(self):
+        return self.position
+    
     
     def get_size(self):
         return self.size
