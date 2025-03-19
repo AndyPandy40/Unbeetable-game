@@ -116,7 +116,25 @@ class MainGame:
         self.game_start_time = pygame.time.get_ticks()
 
         # Initialises and draws the tilemap
-        self.NewMap = Map()
+
+        self.tilemap = [
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ]
+
+
+        bee_target_tile = (15,4)
+        upper_bee_starting_tile = (0, 3)
+        lower_bee_starting_tile = (0, 6)
+        self.NewMap = Map(bee_target_tile, upper_bee_starting_tile, lower_bee_starting_tile, self.tilemap)
         self.NewMap.draw_tilemap(self.screen)
 
         # Creates the shop
@@ -152,7 +170,7 @@ class MainGame:
         self.bee_spawn_cooldown = 800
 
         # Calculate all the tile vectors
-        self.NewMap.calc_tile_distances()
+        self.NewMap.calc_tile_distances(self.tilemap)
         self.mapVectors = self.NewMap.get_vectors()
 
 
@@ -166,7 +184,7 @@ class MainGame:
         # Set up towers
         self.tower_array = []
 
-        self.tower_places = self.NewMap.get_tilemap()
+        self.tower_places = self.tilemap
 
         self.ghost_tower_x_pos = 0
         self.ghost_tower_y_pos = 0
@@ -180,7 +198,7 @@ class MainGame:
 
                 if event.type == pygame.MOUSEBUTTONDOWN and self.placing_tower == True:
                     if event.button == 1:
-                        self.place_tower()
+                        self.check_tower()
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1 and self.placing_tower == False:
@@ -200,15 +218,6 @@ class MainGame:
 
             # Updates the tilemap and bees
             self.NewMap.draw_tilemap(self.screen)
-            
-            
-            #self.NewMap.display_distances(self.screen)
-
-            #self.NewMap.display_tile_positions(self.screen)
-
-            #self.NewMap.display_vectors(self.screen)
-
-
 
             self.current_time = pygame.time.get_ticks()
 
@@ -216,7 +225,7 @@ class MainGame:
             # Slowly decrease bee spawn time
             self.bee_spawn_cooldown -= self.current_time/1000000
 
-            if self.bee_spawn_cooldown <= 500:
+            if self.bee_spawn_cooldown <= 700:
                 self.bee_spawn_cooldown = 700
 
             # Spawn a bee at the top and bottom of the map
@@ -245,6 +254,8 @@ class MainGame:
                 if not entity.exists:
                     self.bee_array.remove(entity)
 
+
+
                 # Move each bee based on the vector of the tile they're on
                 bee_tile = entity.what_tile_am_I_on()
                 tile_bee_vector = self.mapVectors[bee_tile]
@@ -252,17 +263,22 @@ class MainGame:
                 bee_tile = pygame.Vector2(bee_tile)
                 tile_bee_vector = pygame.Vector2(tile_bee_vector)
 
+                # Find the next tile the bee will try go to
                 next_tile = bee_tile + tile_bee_vector
-
+                
+                # Find the center of the next tile
                 next_tile_center_pos = TILE_SIZE * (next_tile + pygame.Vector2(0.5, 0.5))
 
+                # Find the direction to the center of the next tile
                 bee_direction = next_tile_center_pos - pygame.Vector2(entity.get_position())
-
                 bee_vector = bee_direction.normalize() * entity.speed
                 
-
+                # Change the bee's location based on the vector
                 entity.change_position(bee_vector[0], bee_vector[1])
 
+
+
+                # Animate each bee
                 entity.animate_bee(self.screen)
 
             # Blits the line again to draw over dead bees
@@ -352,18 +368,32 @@ class MainGame:
             self.screen.blit(ghost_tower_image, [self.ghost_tower_x_pos, self.ghost_tower_y_pos], (0, 0, ghost_tower_width , ghost_tower_height))
 
 
-    def place_tower(self):
+    def check_tower(self):
         if self.ghost_tower_x_pos <= self.game_width:
             x_tile = self.ghost_tower_x_pos // TILE_SIZE
-            y_tile = self.ghost_tower_y_pos // TILE_SIZE
+            y_tile = (self.ghost_tower_y_pos // TILE_SIZE) + 1
 
-            if self.tower_places[y_tile+1][x_tile] != 1:
-                NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK, 50)
-                self.tower_array.append(NewTower)
+            if self.tower_places[y_tile][x_tile] != 2:
+                if self.tower_places[y_tile][x_tile] == 1:
+                    is_valid_placement = self.NewMap.check_valid_placement(y_tile, x_tile)
 
-                self.tower_places[y_tile+1][x_tile] = 1
-                self.money -= 100
-                self.placing_tower = False
+                    if not is_valid_placement:
+                        return
+                    
+                    else:
+                        self.place_tower(x_tile, y_tile)
+
+                self.place_tower(x_tile, y_tile)
+
+
+    def place_tower(self, x_tile, y_tile):
+
+        NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK, 50)
+        self.tower_array.append(NewTower)
+
+        self.tower_places[y_tile][x_tile] = 2
+        self.money -= 100
+        self.placing_tower = False
         
 
     def quit(self):
@@ -421,7 +451,7 @@ class Button:
 
 
 class Map:
-    def __init__(self):
+    def __init__(self, target_tile, bee_starting_tile1, bee_starting_tile2, tilemap):
 
         # Sets up the grass img
         self.grass_img = pygame.image.load("images/tiles/grass.png").convert()
@@ -437,20 +467,9 @@ class Map:
             1: self.path_img,
         }
 
-        self.tilemap = [
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
-            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
-            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
-            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
-            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
-            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        ]
-
         self.background_surface = pygame.Surface((1440, 960))
+
+        self.tilemap = tilemap
 
         for row in range(len(self.tilemap)):
             for col in range(len(self.tilemap[row])):
@@ -468,17 +487,18 @@ class Map:
         # Set up everything for pathfinding
         self.frontier = []
         self.distances = {}
-        self.target_tile = (15,4)
+        self.target_tile = target_tile
+        self.bee_starting_tile1 = bee_starting_tile1
+        self.bee_starting_tile2 = bee_starting_tile2
         self.explored = []
 
         self.vectors= {}
 
 
     def draw_tilemap(self, screen):
-        
         screen.blit(self.background_surface, (0, 0))
 
-    def calc_tile_distances(self):
+    def calc_tile_distances(self, tilemap):
         #print("Target tile =", self.target_tile) # target is 15,4
 
 
@@ -490,7 +510,7 @@ class Map:
 
         # While there is something left in the frontier
         while (self.frontier):
-            if self.check_if_field_tile(self.frontier[0]) == True:
+            if self.check_if_field_tile(self.frontier[0], tilemap) == True:
                 self.distances[self.frontier[0]] = 99
                 self.frontier.pop(0)
 
@@ -521,13 +541,10 @@ class Map:
 
                     # Say that is has already been explored once we're done with it
                     self.explored.append(self.frontier[0])
-                    #print(self.frontier[0], "is explored")
 
                     # Remove it from the queue as we've already explored it
                     self.frontier.pop(0)
 
-                    #print("frontier:", self.frontier)
-                    #print(self.distances)
                     
                 else:
 
@@ -566,11 +583,24 @@ class Map:
         return closest_tile
 
 
+    def check_if_field_tile(self, tile, tile_map):
+
+        tile_y_pos = tile[0]
+        tile_x_pos = tile[1]
+
+        tile_type = tile_map[tile_x_pos][tile_y_pos]
+
+        if tile_type == 0:
+            return True
+        else:
+            return False
+        
+
     def display_distances(self, screen):
         # Print distances on tiles
         for key in self.distances:
             text_x_pos = (key[0] * TILE_SIZE) + 50
-            text_y_pos = (key[1]* TILE_SIZE) + 50
+            text_y_pos = (key[1] * TILE_SIZE) + 50
             display_text(str(self.distances[key]), (text_x_pos, text_y_pos), 50, BLACK, screen)
 
     def display_tile_positions(self, screen):
@@ -586,21 +616,15 @@ class Map:
             text_y_pos = (vector[1]* TILE_SIZE) + 50
             display_text(str(self.vectors[vector]), (text_x_pos, text_y_pos), 32, BLACK, screen)
 
-    def check_if_field_tile(self,tile):
-
-        tile_y_pos = tile[0]
-        tile_x_pos = tile[1]
-
-        #print(tile_x_pos)
-        #print(tile_y_pos)
-
-        tile_type = self.tilemap[tile_x_pos][tile_y_pos]
-        #print(tile)
-        if tile_type == 0:
-            return True
-        else:
-            return False
     
+    def check_valid_placement(self, y_tile, x_tile):
+
+        new_map = self.tilemap
+        
+        new_map[y_tile][x_tile] = 0
+
+
+
     def get_vectors(self):
         return self.vectors
 
