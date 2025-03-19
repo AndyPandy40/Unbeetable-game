@@ -373,17 +373,19 @@ class MainGame:
             x_tile = self.ghost_tower_x_pos // TILE_SIZE
             y_tile = (self.ghost_tower_y_pos // TILE_SIZE) + 1
 
-            if self.tower_places[y_tile][x_tile] != 2:
-                if self.tower_places[y_tile][x_tile] == 1:
-                    is_valid_placement = self.NewMap.check_valid_placement(y_tile, x_tile)
+            if self.tower_places[y_tile][x_tile] == 2:
+                return
 
-                    if not is_valid_placement:
-                        return
-                    
-                    else:
-                        self.place_tower(x_tile, y_tile)
+            if self.tower_places[y_tile][x_tile] == 1:
+                is_valid_placement = self.NewMap.check_valid_placement(y_tile, x_tile)
 
-                self.place_tower(x_tile, y_tile)
+                if not is_valid_placement:
+                    return
+                
+                else:
+                    self.place_tower(x_tile, y_tile)
+
+            self.place_tower(x_tile, y_tile)
 
 
     def place_tower(self, x_tile, y_tile):
