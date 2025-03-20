@@ -122,8 +122,8 @@ class MainGame:
             [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
             [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
             [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
-            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
             [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
             [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
             [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
@@ -175,7 +175,7 @@ class MainGame:
 
 
         self.score = 0
-        self.money = 200
+        self.money = 500
         self.lives = 5
 
         # Not currently placing tower
@@ -255,7 +255,6 @@ class MainGame:
                     self.bee_array.remove(entity)
 
 
-
                 # Move each bee based on the vector of the tile they're on
                 bee_tile = entity.what_tile_am_I_on()
                 tile_bee_vector = self.mapVectors[bee_tile]
@@ -308,6 +307,8 @@ class MainGame:
             # Redraw shop button
             self.TowerButton.draw_button(self.screen)
             self.display_shop_button_images()
+
+            self.NewMap.display_distances(self.screen)
 
 
             self.mouse_pos = pygame.mouse.get_pos()
@@ -377,13 +378,15 @@ class MainGame:
                 return
 
             if self.tower_places[y_tile][x_tile] == 1:
-                is_valid_placement = self.NewMap.check_valid_placement(y_tile, x_tile)
+                is_valid_placement, new_tile_vectors = self.NewMap.check_valid_placement(y_tile, x_tile)
 
                 if not is_valid_placement:
                     return
                 
                 else:
+                    self.mapVectors = new_tile_vectors
                     self.place_tower(x_tile, y_tile)
+                    return
 
             self.place_tower(x_tile, y_tile)
 
@@ -488,12 +491,11 @@ class Map:
 
         # Set up everything for pathfinding
         self.frontier = []
-        self.distances = {}
         self.target_tile = target_tile
         self.bee_starting_tile1 = bee_starting_tile1
         self.bee_starting_tile2 = bee_starting_tile2
         self.explored = []
-
+        self.distances = {}
         self.vectors= {}
 
 
@@ -556,9 +558,16 @@ class Map:
         for key in self.distances:
             vector = self.find_tile_vector(key)
             self.vectors[key] = vector
+
+        if (self.bee_starting_tile1 in self.vectors) and (self.bee_starting_tile2 in self.vectors):
+            return True
+        else:
+            return False
            
 
         #print("final distances", self.distances)
+
+
 
     def find_tile_vector(self, key):
 
@@ -596,7 +605,17 @@ class Map:
             return True
         else:
             return False
+
+    
+    def check_valid_placement(self, y_tile, x_tile):
+
+        new_map = self.tilemap
         
+        new_map[y_tile][x_tile] = 0
+
+        if self.calc_tile_distances(new_map):
+            return True, self.vectors
+
 
     def display_distances(self, screen):
         # Print distances on tiles
@@ -608,7 +627,7 @@ class Map:
     def display_tile_positions(self, screen):
         for key in self.distances:
             text_x_pos = (key[0] * TILE_SIZE) + 50
-            text_y_pos = (key[1]* TILE_SIZE) + 50
+            text_y_pos = (key[1] * TILE_SIZE) + 50
             coords = f"({key[0]}, {key[1]})" 
             display_text(coords, (text_x_pos, text_y_pos), 32, BLACK, screen)
 
@@ -617,13 +636,6 @@ class Map:
             text_x_pos = (vector[0] * TILE_SIZE) + 50
             text_y_pos = (vector[1]* TILE_SIZE) + 50
             display_text(str(self.vectors[vector]), (text_x_pos, text_y_pos), 32, BLACK, screen)
-
-    
-    def check_valid_placement(self, y_tile, x_tile):
-
-        new_map = self.tilemap
-        
-        new_map[y_tile][x_tile] = 0
 
 
 
