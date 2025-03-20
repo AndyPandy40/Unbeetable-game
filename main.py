@@ -118,16 +118,16 @@ class MainGame:
         # Initialises and draws the tilemap
 
         self.tilemap = [
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
-            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
-            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
-            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
-            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
-            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+            [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0],
+            [0,0,1,1,1,0,1,0,0,0,0,0,0,0,1,0],
+            [0,1,1,0,1,0,1,0,1,1,1,1,1,1,1,0],
+            [1,1,0,0,1,0,1,0,1,0,0,0,0,0,0,0],
+            [0,1,0,0,1,0,1,0,1,0,0,0,1,1,1,1],
+            [0,1,0,0,1,0,1,0,1,0,1,1,1,0,0,0],
+            [1,1,0,1,1,0,1,0,1,0,1,0,0,0,0,0],
+            [0,0,1,1,0,0,1,0,1,0,1,1,0,0,0,0],
+            [0,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0],
+            [0,0,1,1,1,0,0,0,0,1,1,1,0,0,0,0]
         ]
 
 
@@ -205,8 +205,10 @@ class MainGame:
                         self.buy_tower()
 
                     if event.key == pygame.K_ESCAPE and self.placing_tower == True:
-                        print("pressed esc key")
                         self.placing_tower = False
+
+                    if event.key == pygame.K_p:
+                        self.pause_game()
                         
                 
             # Show fps
@@ -232,8 +234,8 @@ class MainGame:
             if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
                 self.last_bee_spawned = self.current_time
 
-                TopBee = Bees(48, BLACK, 100, 0.5, True, (0,350))
-                BottomBee = Bees(48, BLACK, 100, 0.5, True, (0,650))
+                TopBee = Bees(48, BLACK, 100, 2, True, (0,350))
+                BottomBee = Bees(48, BLACK, 100, 2, True, (0,650))
                 self.bee_array.append(TopBee)
                 self.bee_array.append(BottomBee)
 
@@ -253,6 +255,7 @@ class MainGame:
                 # Remove any dead bees from the bee array
                 if not entity.exists:
                     self.bee_array.remove(entity)
+
 
 
                 # Move each bee based on the vector of the tile they're on
@@ -308,7 +311,7 @@ class MainGame:
             self.TowerButton.draw_button(self.screen)
             self.display_shop_button_images()
 
-            self.NewMap.display_distances(self.screen)
+            #self.NewMap.display_distances(self.screen)
 
 
             self.mouse_pos = pygame.mouse.get_pos()
@@ -399,6 +402,18 @@ class MainGame:
         self.tower_places[y_tile][x_tile] = 2
         self.money -= 100
         self.placing_tower = False
+
+    def pause_game(self):
+        paused = True
+
+        while paused:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        paused = False
+                if event.type == pygame.QUIT:
+                    self.quit()
+
         
 
     def quit(self):
@@ -506,6 +521,11 @@ class Map:
         #print("Target tile =", self.target_tile) # target is 15,4
 
 
+        self.explored = []
+        self.distances = {}
+        self.vectors = {}
+        self.frontier = []
+
         # The first tile has a distance of one
         self.distances[self.target_tile] = 0
 
@@ -548,7 +568,6 @@ class Map:
 
                     # Remove it from the queue as we've already explored it
                     self.frontier.pop(0)
-
                     
                 else:
 
@@ -609,12 +628,17 @@ class Map:
     
     def check_valid_placement(self, y_tile, x_tile):
 
+        previous_map = self.tilemap
         new_map = self.tilemap
         
         new_map[y_tile][x_tile] = 0
 
         if self.calc_tile_distances(new_map):
             return True, self.vectors
+        
+        else:
+            self.tilemap = previous_map
+            return False, None
 
 
     def display_distances(self, screen):
