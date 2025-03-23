@@ -1,4 +1,5 @@
 import pygame
+import copy
 pygame.init()
 
 # Tile_size_constant
@@ -118,16 +119,16 @@ class MainGame:
         # Initialises and draws the tilemap
 
         self.tilemap = [
-            [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0],
-            [0,0,1,1,1,0,1,0,0,0,0,0,0,0,1,0],
-            [0,1,1,0,1,0,1,0,1,1,1,1,1,1,1,0],
-            [1,1,0,0,1,0,1,0,1,0,0,0,0,0,0,0],
-            [0,1,0,0,1,0,1,0,1,0,0,0,1,1,1,1],
-            [0,1,0,0,1,0,1,0,1,0,1,1,1,0,0,0],
-            [1,1,0,1,1,0,1,0,1,0,1,0,0,0,0,0],
-            [0,0,1,1,0,0,1,0,1,0,1,1,0,0,0,0],
-            [0,0,1,0,1,1,1,0,1,1,0,1,0,0,0,0],
-            [0,0,1,1,1,0,0,0,0,1,1,1,0,0,0,0]
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+            [0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0],
+            [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ]
 
 
@@ -175,7 +176,7 @@ class MainGame:
 
 
         self.score = 0
-        self.money = 500
+        self.money = 1000
         self.lives = 5
 
         # Not currently placing tower
@@ -234,8 +235,8 @@ class MainGame:
             if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
                 self.last_bee_spawned = self.current_time
 
-                TopBee = Bees(48, BLACK, 100, 2, True, (0,350))
-                BottomBee = Bees(48, BLACK, 100, 2, True, (0,650))
+                TopBee = Bees(48, BLACK, 100, 0.5, True, (0,350))
+                BottomBee = Bees(48, BLACK, 100, 0.5, True, (0,650))
                 self.bee_array.append(TopBee)
                 self.bee_array.append(BottomBee)
 
@@ -518,8 +519,7 @@ class Map:
         screen.blit(self.background_surface, (0, 0))
 
     def calc_tile_distances(self, tilemap):
-        #print("Target tile =", self.target_tile) # target is 15,4
-
+        # target tile is 15,4
 
         self.explored = []
         self.distances = {}
@@ -620,7 +620,7 @@ class Map:
 
         tile_type = tile_map[tile_x_pos][tile_y_pos]
 
-        if tile_type == 0:
+        if tile_type != 1:
             return True
         else:
             return False
@@ -628,7 +628,12 @@ class Map:
     
     def check_valid_placement(self, y_tile, x_tile):
 
-        previous_map = self.tilemap
+        previous_map = copy.deepcopy(self.tilemap)
+        previous_explored = self.explored
+        previous_distances = self.distances
+        previous_vectors = self.vectors
+        previous_frontier = self.frontier
+
         new_map = self.tilemap
         
         new_map[y_tile][x_tile] = 0
@@ -638,6 +643,11 @@ class Map:
         
         else:
             self.tilemap = previous_map
+            self.explored = previous_explored
+            self.distances = previous_distances 
+            self.vectors = previous_vectors
+            self.frontier = previous_frontier
+
             return False, None
 
 
@@ -674,7 +684,7 @@ class Bees:
     def __init__(self, size, color, health, speed, exists: bool, position):
         self.sprite_sheet = pygame.image.load("images/bees/bee.png").convert_alpha()
         self.size = size
-        self.color = color
+        self.color = color 
         self.health = health
         self.original_health = self.health
         self.speed = speed
