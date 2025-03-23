@@ -169,6 +169,8 @@ class MainGame:
         self.bee_array = []
         self.last_bee_spawned = 0
         self.bee_spawn_cooldown = 800
+        self.bee_health = 100
+        self.number_of_bees_spawned = 0
 
         # Calculate all the tile vectors
         self.NewMap.calc_tile_distances(self.tilemap)
@@ -185,7 +187,7 @@ class MainGame:
         # Set up towers
         self.tower_array = []
 
-        self.tower_places = self.tilemap
+        self.tower_places = copy.deepcopy(self.tilemap)
 
         self.ghost_tower_x_pos = 0
         self.ghost_tower_y_pos = 0
@@ -197,9 +199,12 @@ class MainGame:
                 if event.type == pygame.QUIT:
                     self.quit()
 
-                if event.type == pygame.MOUSEBUTTONDOWN and self.placing_tower == True:
-                    if event.button == 1:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1 and self.placing_tower == True:
                         self.check_tower()
+
+                    if event.button == 3:
+                        right_clicked = True
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1 and self.placing_tower == False:
@@ -210,6 +215,9 @@ class MainGame:
 
                     if event.key == pygame.K_p:
                         self.pause_game()
+
+            self.mouse_pos = pygame.mouse.get_pos()
+            self.clicked = pygame.mouse.get_pressed()
                         
                 
             # Show fps
@@ -228,12 +236,15 @@ class MainGame:
             # Slowly decrease bee spawn time
             self.bee_spawn_cooldown -= self.current_time/1000000
 
-            if self.bee_spawn_cooldown <= 700:
-                self.bee_spawn_cooldown = 700
+            if self.bee_spawn_cooldown <= 200:
+                self.bee_spawn_cooldown = 200
 
             # Spawn a bee at the top and bottom of the map
             if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
                 self.last_bee_spawned = self.current_time
+
+                self.number_of_bees_spawned += 2
+                
 
                 TopBee = Bees(48, BLACK, 100, 0.5, True, (0,350))
                 BottomBee = Bees(48, BLACK, 100, 0.5, True, (0,650))
@@ -256,7 +267,6 @@ class MainGame:
                 # Remove any dead bees from the bee array
                 if not entity.exists:
                     self.bee_array.remove(entity)
-
 
 
                 # Move each bee based on the vector of the tile they're on
@@ -302,6 +312,9 @@ class MainGame:
                     self.score += 5
                     self.money += 10
 
+
+                tower.am_i_being_hovered(self.mouse_pos, right_clicked, self.screen)
+
             self.screen.set_clip(original_clip)
 
             self.display_score()
@@ -315,8 +328,7 @@ class MainGame:
             #self.NewMap.display_distances(self.screen)
 
 
-            self.mouse_pos = pygame.mouse.get_pos()
-            self.clicked = pygame.mouse.get_pressed()
+            right_clicked = False
 
             # Display the game at 120 fps
             self.clock.tick(120)
@@ -397,7 +409,7 @@ class MainGame:
 
     def place_tower(self, x_tile, y_tile):
 
-        NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK, 50)
+        NewTower = Towers((self.ghost_tower_x_pos, self.ghost_tower_y_pos), BLACK, 50, (x_tile, y_tile))
         self.tower_array.append(NewTower)
 
         self.tower_places[y_tile][x_tile] = 2
@@ -819,7 +831,7 @@ class Bees:
 
 
 class Towers:
-    def __init__(self, position, color, damage):
+    def __init__(self, position, color, damage, tile):
         self.sprite_sheet = pygame.image.load("images/towers/towerBase.png")
         self.sprite_sheet = pygame.transform.scale(self.sprite_sheet, (TILE_SIZE*1.5, TILE_SIZE))
 
@@ -829,6 +841,7 @@ class Towers:
         self.position = position
         self.color = color
         self.damage = damage
+        self.tile = tile
 
 
         self.tower_height = TILE_SIZE 
@@ -880,6 +893,7 @@ class Towers:
 
         self.shooting_bee = False
         self.killed_bee = False
+
         
 
     def get_weapon_image(self, frame, width, height, column):
@@ -944,10 +958,7 @@ class Towers:
             if x_dist_squared + y_dist_squared <= self.tower_range**2:
                 nearby_bees.append(bee)
 
-        # Show the tower's range
-        circle_surface = pygame.Surface((self.tower_range*2, self.tower_range*2), pygame.SRCALPHA)
-        pygame.draw.circle(circle_surface, (0, 0, 0, 40), (self.tower_range, self.tower_range), self.tower_range)
-        screen.blit(circle_surface, (self.tower_x_center - self.tower_range, self.tower_y_center-self.tower_range))
+        
 
         # Check if there is a bee nearby
         if nearby_bees:
@@ -1015,6 +1026,35 @@ class Towers:
         else:
             self.shooting_bee = False
 
+
+    def am_i_being_hovered(self, mouse_pos, right_clicked, screen):
+
+        tile_top_left = self.tile[0] * TILE_SIZE, self.tile[1] * TILE_SIZE
+
+
+        if tile_top_left[0] < mouse_pos[0] < tile_top_left[0] + TILE_SIZE:
+            if tile_top_left[1] < mouse_pos[1] < tile_top_left[1] + TILE_SIZE:
+                if right_clicked:
+                    self.upgrade_tower()
+        
+                # Show the tower's range
+                circle_surface = pygame.Surface((self.tower_range*2, self.tower_range*2), pygame.SRCALPHA)
+                pygame.draw.circle(circle_surface, (0, 0, 0, 40), (self.tower_range, self.tower_range), self.tower_range)
+                screen.blit(circle_surface, (self.tower_x_center - self.tower_range, self.tower_y_center-self.tower_range))
+
+    def upgrade_tower(self):
+        if self.level != 3:
+            new_weapon_pos = self.weapon_position[0], self.weapon_position[1] - 5
+            self.weapon_position = new_weapon_pos
+            self.level += 1
+
+            # Upgrades
+            self.damage += 25
+            self.tower_range += 20
+            self.attack_animation_cooldown -= 20
+
+
+        print("upgrading tower")
 
 
 
