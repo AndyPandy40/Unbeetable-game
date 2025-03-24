@@ -163,19 +163,18 @@ class MainGame:
         self.shop_coin_image = pygame.transform.scale_by(self.shop_coin_image, 0.6)
 
         self.screen.blit(self.shop_coin_image, (self.game_width + 136, 148))
-        
+
 
         # Set up spawning bees
         self.bee_array = []
         self.last_bee_spawned = 0
-        self.bee_spawn_cooldown = 800
-        self.bee_health = 100
+        self.bee_spawn_cooldown = 1500
+        self.bee_health = 250
         self.number_of_bees_spawned = 0
 
         # Calculate all the tile vectors
         self.NewMap.calc_tile_distances(self.tilemap)
         self.mapVectors = self.NewMap.get_vectors()
-
 
         self.score = 0
         self.money = 1000
@@ -234,9 +233,9 @@ class MainGame:
 
 
             # Slowly decrease bee spawn time
-            self.bee_spawn_cooldown -= self.current_time/1000000
+            self.bee_spawn_cooldown -= self.current_time/10000000
 
-            if self.bee_spawn_cooldown <= 200:
+            if self.bee_spawn_cooldown <= 500:
                 self.bee_spawn_cooldown = 200
 
             # Spawn a bee at the top and bottom of the map
@@ -244,10 +243,14 @@ class MainGame:
                 self.last_bee_spawned = self.current_time
 
                 self.number_of_bees_spawned += 2
+
+                if self.number_of_bees_spawned % 10 == 0:
+                    self.bee_health += 20
+
                 
 
-                TopBee = Bees(48, BLACK, 100, 0.5, True, (0,350))
-                BottomBee = Bees(48, BLACK, 100, 0.5, True, (0,650))
+                TopBee = Bees(48, BLACK, self.bee_health, 0.5, True, (0,350))
+                BottomBee = Bees(48, BLACK, self.bee_health, 0.5, True, (0,650))
                 self.bee_array.append(TopBee)
                 self.bee_array.append(BottomBee)
 
@@ -641,10 +644,7 @@ class Map:
     def check_valid_placement(self, y_tile, x_tile):
 
         previous_map = copy.deepcopy(self.tilemap)
-        previous_explored = self.explored
-        previous_distances = self.distances
-        previous_vectors = self.vectors
-        previous_frontier = self.frontier
+
 
         new_map = self.tilemap
         
@@ -655,10 +655,7 @@ class Map:
         
         else:
             self.tilemap = previous_map
-            self.explored = previous_explored
-            self.distances = previous_distances 
-            self.vectors = previous_vectors
-            self.frontier = previous_frontier
+
 
             return False, None
 
