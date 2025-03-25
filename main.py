@@ -316,7 +316,10 @@ class MainGame:
                     self.money += 10
 
 
-                tower.am_i_being_hovered(self.mouse_pos, right_clicked, self.screen)
+                change_in_money = tower.am_i_being_hovered(self.mouse_pos, right_clicked, self.screen, self.money)
+
+                if change_in_money != None:
+                    self.money += change_in_money
 
             self.screen.set_clip(original_clip)
 
@@ -419,6 +422,13 @@ class MainGame:
         self.money -= 100
         self.placing_tower = False
 
+
+    def get_money(self):
+        return self.money
+    
+    def change_money(self, change):
+        self.money += change
+
     def pause_game(self):
         paused = True
 
@@ -431,7 +441,6 @@ class MainGame:
                     self.quit()
 
         
-
     def quit(self):
         pygame.quit()
         exit()
@@ -1024,23 +1033,26 @@ class Towers:
             self.shooting_bee = False
 
 
-    def am_i_being_hovered(self, mouse_pos, right_clicked, screen):
+    def am_i_being_hovered(self, mouse_pos, right_clicked, screen, money):
 
         tile_top_left = self.tile[0] * TILE_SIZE, self.tile[1] * TILE_SIZE
-
+        change_money = 0
 
         if tile_top_left[0] < mouse_pos[0] < tile_top_left[0] + TILE_SIZE:
             if tile_top_left[1] < mouse_pos[1] < tile_top_left[1] + TILE_SIZE:
                 if right_clicked:
-                    self.upgrade_tower()
+                    if self.upgrade_tower(money):
+                        change_money = -300
         
                 # Show the tower's range
                 circle_surface = pygame.Surface((self.tower_range*2, self.tower_range*2), pygame.SRCALPHA)
                 pygame.draw.circle(circle_surface, (0, 0, 0, 40), (self.tower_range, self.tower_range), self.tower_range)
                 screen.blit(circle_surface, (self.tower_x_center - self.tower_range, self.tower_y_center-self.tower_range))
 
-    def upgrade_tower(self):
-        if self.level != 3:
+                return change_money
+
+    def upgrade_tower(self, money):
+        if self.level != 3 and money >= 300:
             new_weapon_pos = self.weapon_position[0], self.weapon_position[1] - 5
             self.weapon_position = new_weapon_pos
             self.level += 1
@@ -1050,8 +1062,8 @@ class Towers:
             self.tower_range += 20
             self.attack_animation_cooldown -= 20
 
+            return True
 
-        print("upgrading tower")
 
 
 
