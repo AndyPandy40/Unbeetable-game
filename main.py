@@ -168,7 +168,7 @@ class MainGame:
         # Set up spawning bees
         self.bee_array = []
         self.last_bee_spawned = 0
-        self.bee_spawn_cooldown = 1500
+        self.bee_spawn_cooldown = 2500
         self.bee_health = 250
         self.number_of_bees_spawned = 0
 
