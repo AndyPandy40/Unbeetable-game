@@ -233,10 +233,10 @@ class MainGame:
 
 
             # Slowly decrease bee spawn time
-            self.bee_spawn_cooldown -= self.current_time/10000000
+            self.bee_spawn_cooldown -= self.current_time/5000000
 
-            if self.bee_spawn_cooldown <= 500:
-                self.bee_spawn_cooldown = 200
+            if self.bee_spawn_cooldown <= 400:
+                self.bee_spawn_cooldown = 400
 
             # Spawn a bee at the top and bottom of the map
             if self.current_time - self.last_bee_spawned >= self.bee_spawn_cooldown:
@@ -245,7 +245,7 @@ class MainGame:
                 self.number_of_bees_spawned += 2
 
                 if self.number_of_bees_spawned % 10 == 0:
-                    self.bee_health += 20
+                    self.bee_health += 10
 
                 
 
