@@ -217,6 +217,9 @@ class MainGame:
 
             self.mouse_pos = pygame.mouse.get_pos()
             self.clicked = pygame.mouse.get_pressed()
+
+            if self.lives == 0:
+                print(self.score)
                         
                 
             # Show fps
