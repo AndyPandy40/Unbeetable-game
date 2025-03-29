@@ -1,0 +1,7 @@
+How to play:
+1. Press 1 or click on the tower in the show to buy a tower (100 coins)
+2. Right click on an already placed tower to upgrade it (300 coins)
+
+Tips:
+1. You can place towers on the path so long as they don't block the pathing of the bees
+2. Try to place the towers in a zig zag pattern to make the bees take the longest path possible
